@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Create Dev.to Blog Post",
+  "description": "Creates a simple blog post with title, What I Built, Demo, and How I Used Redis 8 sections in DEVTO.md file within the PITCH folder",
+  "version": "1",
+  "when": {
+    "type": "userTriggered",
+    "patterns": [
+      "PITCH/DEVTO.md"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Create a simple blog post with the following sections:\n# title\n## What I Built\n<!-- Share an overview about your project. -->\n## Demo\n<!-- Show repo link -->\n## How I Used Redis 8\n<!-- Explain how you used Redis 8 for capabilities beyond caching. Did you use it as a primary database, for search, or combine multiple features like streams and pub/sub? -->\n\nSave this content to the file PITCH/DEVTO.md"
+  }
+}

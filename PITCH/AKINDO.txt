@@ -1,0 +1,32 @@
+PROJECT NAME
+Redis AI Vector Search Boilerplate
+
+PROJECT DESCRIPTION
+A modern full-stack application demonstrating AI-powered semantic search using Redis vector similarity, built with React, TypeScript, and Deno. This project showcases intelligent search functionality with text embeddings and vector databases.
+
+TAGLINE
+redis,ai,vector
+
+WHAT IT DOES
+Enables natural language semantic search using AI embeddings stored in Redis. Users can add content, search with natural queries, and get relevance-ranked results. Features real-time UI, CRUD operations, and serverless deployment compatibility.
+
+THE PROBLEM IT SOLVES
+Traditional keyword search fails to understand context and meaning. This solution uses AI embeddings to enable semantic search that understands intent, finds relevant content even with different wording, and provides intelligent ranking based on similarity.
+
+CHALLENGES I RAN INTO
+Integrating Google GenAI embeddings with Redis vector storage, handling CORS in serverless functions, optimizing cosine similarity calculations for performance, and ensuring compatibility across different Redis providers and deployment platforms.
+
+TECHNOLOGIES I USED
+React 19, TypeScript, Deno, Redis, Google GenAI, Tailwind CSS, Vite, Radix UI, React Router. Backend uses serverless functions with vector similarity search, frontend features modern UI with dark/light themes.
+
+HOW WE BUILT IT
+Built with spec-driven development using Kiro AI. Created modular Deno functions for CRUD operations, implemented vector embedding generation, designed responsive React UI, and configured multi-platform deployment for Deno Deploy and Cloudflare Pages.
+
+WHAT WE LEARNED
+Vector similarity search implementation, AI embedding integration patterns, serverless function architecture, Redis optimization techniques, and modern full-stack development with Deno and React 19.
+
+WHAT'S NEXT FOR
+Enhanced search filters, multi-language support, real-time collaboration features, advanced vector indexing algorithms, integration with more AI models, and expanded deployment options for various cloud platforms.
+
+UPDATE OF THIS PROJECT TODAY
+Completed comprehensive documentation, implemented all CRUD operations with vector search, added theme support, created deployment guides for multiple platforms, and established spec-driven development workflow with Kiro AI integration.
