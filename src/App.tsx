@@ -7,8 +7,7 @@ import {
 import { ClerkProvider } from '@clerk/clerk-react'
 import { StagewiseToolbar } from '@stagewise/toolbar-react'
 import ReactPlugin from '@stagewise-plugins/react'
-import { ThemeProvider } from '@/contexts/ThemeContext'
-import { ThemeToggle } from '@/components/ThemeToggle'
+
 import { AISearchPage } from '@/components/AISearchPage'
 import { HomePage } from '@/components/HomePage'
 import { Toaster } from 'sonner'

@@ -1,6 +1,6 @@
 // Deno function to initialize Redis search index for vector similarity
 import { createItemsIndex, checkIndexExists } from '../utils/redis-index.ts'
-import { validateClerkAuth, createUnauthorizedResponse, createServerErrorResponse } from '../utils/auth.ts'
+import { validateClerkAuth, createUnauthorizedResponse } from '../utils/auth.ts'
 
 interface InitIndexResponse {
   success: boolean

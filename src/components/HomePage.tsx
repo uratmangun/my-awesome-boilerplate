@@ -92,15 +92,15 @@ export function HomePage() {
       
       if (response.ok) {
         // Remove the deleted repo from the local state
-        setRepositories(repositories.filter((repo: any) => repo.id !== repoId))
+        setRepositories(repositories.filter((repo: Record<string, unknown>) => repo.id !== repoId))
         toast.success('Repository deleted successfully!', {
           duration: 3000,
         })
       } else {
-        const errorData = await response.json()
+        const errorData = await response.json() as Record<string, unknown>
         console.error('Failed to delete repository:', errorData)
         toast.error('Failed to delete repository', {
-          description: errorData.message || 'Please try again.',
+          description: (errorData.message as string) || 'Please try again.',
           duration: 3000,
         })
       }
@@ -321,7 +321,7 @@ export function HomePage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {(isSearchMode ? searchResults : repositories).map((repo: any) => (
+              {(isSearchMode ? searchResults : repositories).map((repo: Record<string, unknown>) => (
                 <Card key={repo.id} className="p-6 hover:shadow-lg transition-shadow">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg flex items-center gap-2 text-blue-600 dark:text-blue-300">
@@ -486,8 +486,8 @@ export function HomePage() {
                         setGithubRepo('')
                       }, 1500)
                     } else {
-                      const errorData = await response.json()
-                      setSubmissionError(errorData.message || 'Failed to add repository')
+                      const errorData = await response.json() as Record<string, unknown>
+                      setSubmissionError((errorData.message as string) || 'Failed to add repository')
                       console.error('Failed to add repository:', errorData)
                     }
                   } catch (error) {

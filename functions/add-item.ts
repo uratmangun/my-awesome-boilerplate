@@ -1,7 +1,7 @@
 // Deno function to add items to Redis database with vector embeddings
 import { connect } from 'https://deno.land/x/redis@v0.32.3/mod.ts'
 import { generateTextEmbeddings } from '../utils/text-embeddings.ts'
-import { validateClerkAuth, createUnauthorizedResponse, createServerErrorResponse } from '../utils/auth.ts'
+import { validateClerkAuth, createUnauthorizedResponse } from '../utils/auth.ts'
 
 interface AddItemRequest {
   github_repository_url: string // GitHub repository URL (e.g., https://github.com/owner/repo)
@@ -154,7 +154,7 @@ export default {
       const [, owner, repo] = githubUrlMatch
 
       // Fetch repository information from GitHub API
-      let repoData: any
+      let repoData: Record<string, unknown>
       try {
         const githubResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}`)
         if (!githubResponse.ok) {
@@ -174,7 +174,7 @@ export default {
           )
         }
         repoData = await githubResponse.json()
-      } catch (error) {
+      } catch (_error) {
         return new Response(
           JSON.stringify({
             success: false,

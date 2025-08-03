@@ -1,7 +1,7 @@
 // Deno function to search items using vector similarity (cosine similarity)
 import { connect } from 'https://deno.land/x/redis@v0.32.3/mod.ts'
 import { generateTextEmbeddings } from '../utils/text-embeddings.ts'
-import { validateClerkAuth, createUnauthorizedResponse, createServerErrorResponse } from '../utils/auth.ts'
+import { validateClerkAuth, createUnauthorizedResponse } from '../utils/auth.ts'
 
 interface SearchItemsRequest {
   query: string
@@ -31,7 +31,7 @@ interface SearchItemsResponse {
 export default {
   async fetch(request: Request): Promise<Response> {
     // Enhanced CORS handler
-    const origin = request.headers.get('Origin') || '*'
+    // Enhanced CORS handler
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, HEAD',

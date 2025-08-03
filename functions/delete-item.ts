@@ -1,6 +1,6 @@
 // Deno function to delete a specific item from Redis database
 import { connect } from 'https://deno.land/x/redis@v0.32.3/mod.ts'
-import { validateClerkAuth, createUnauthorizedResponse, createServerErrorResponse } from '../utils/auth.ts'
+import { validateClerkAuth, createUnauthorizedResponse } from '../utils/auth.ts'
 
 interface DeleteItemRequest {
   id: string

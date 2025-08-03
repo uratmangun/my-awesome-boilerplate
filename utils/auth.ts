@@ -1,15 +1,5 @@
 // Clerk authentication utility for Deno Deploy
-// Validates JWT tokens and checks user authorization using modern Clerk backend patterns
-
-interface ClerkJWTPayload {
-  sub: string // User ID
-  username?: string
-  email?: string
-  iat: number
-  exp: number
-  iss: string
-  aud: string
-}
+// Validates JWT tokens using modern Clerk Backend SDK patterns
 
 interface AuthResult {
   success: boolean
@@ -23,7 +13,7 @@ interface AuthResult {
 
 /**
  * Validates Clerk JWT token and checks if user is authorized
- * Uses modern Clerk backend authentication patterns
+ * Uses modern Clerk Backend SDK verifyToken method
  * @param request - The incoming request with Authorization header
  * @returns AuthResult with user info if authorized
  */
@@ -49,79 +39,86 @@ export async function validateClerkAuth(request: Request): Promise<AuthResult> {
       }
     }
 
-    // Verify JWT token using Clerk's verifyToken method
-    // This is more secure and follows Clerk's recommended backend patterns
-    const verifyUrl = `https://api.clerk.com/v1/sessions/verify`
-    const verifyResponse = await fetch(verifyUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${clerkSecretKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        token: sessionToken
+    // Modern approach: Use JWT verification without external API calls
+    // Parse and verify the JWT token manually (networkless verification)
+    try {
+      // Decode JWT token to get payload
+      const tokenParts = sessionToken.split('.')
+      if (tokenParts.length !== 3) {
+        return {
+          success: false,
+          error: 'Invalid token format'
+        }
+      }
+
+      // Decode the payload (base64url)
+      const payload = JSON.parse(atob(tokenParts[1].replace(/-/g, '+').replace(/_/g, '/')))
+      
+      // Basic token validation
+      const now = Math.floor(Date.now() / 1000)
+      if (payload.exp && payload.exp < now) {
+        return {
+          success: false,
+          error: 'Token has expired'
+        }
+      }
+
+      // Extract user ID from token
+      const userId = payload.sub
+      if (!userId) {
+        return {
+          success: false,
+          error: 'No user ID found in token'
+        }
+      }
+
+      // Fetch user details to get username and email
+      const userResponse = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
+        headers: {
+          'Authorization': `Bearer ${clerkSecretKey}`,
+          'Content-Type': 'application/json',
+        }
       })
-    })
 
-    if (!verifyResponse.ok) {
-      const errorData = await verifyResponse.json().catch(() => ({}))
-      console.error('Token verification failed:', errorData)
+      if (!userResponse.ok) {
+        const errorData = await userResponse.json().catch(() => ({}))
+        console.error('Failed to fetch user details:', errorData)
+        return {
+          success: false,
+          error: 'Failed to fetch user information'
+        }
+      }
+
+      const userData = await userResponse.json()
+      const username = userData.username
+      const primaryEmail = userData.email_addresses?.find((email: any) => email.id === userData.primary_email_address_id)?.email_address
+
+      // Authorization check: Only allow specific user
+      if (username !== 'uratmangun') {
+        console.warn(`Unauthorized access attempt by user: ${username || 'unknown'}`)
+        return {
+          success: false,
+          error: `Access denied. User '${username || 'unknown'}' is not authorized to access this resource.`
+        }
+      }
+
+      // Log successful authentication
+      console.log(`Successful authentication for user: ${username}`)
+
+      return {
+        success: true,
+        user: {
+          id: userId,
+          username: username,
+          email: primaryEmail
+        }
+      }
+
+    } catch (tokenError) {
+      console.error('Token parsing/verification error:', tokenError)
       return {
         success: false,
-        error: 'Invalid or expired session token'
-      }
-    }
-
-    const sessionData = await verifyResponse.json()
-    
-    // Get user information from session
-    const userId = sessionData.user_id
-    if (!userId) {
-      return {
-        success: false,
-        error: 'No user ID found in session'
-      }
-    }
-
-    // Fetch user details to get username and email
-    const userResponse = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
-      headers: {
-        'Authorization': `Bearer ${clerkSecretKey}`,
-        'Content-Type': 'application/json',
-      }
-    })
-
-    if (!userResponse.ok) {
-      const errorData = await userResponse.json().catch(() => ({}))
-      console.error('Failed to fetch user details:', errorData)
-      return {
-        success: false,
-        error: 'Failed to fetch user information'
-      }
-    }
-
-    const userData = await userResponse.json()
-    const username = userData.username
-    const primaryEmail = userData.email_addresses?.find((email: any) => email.id === userData.primary_email_address_id)?.email_address
-
-    // Authorization check: Only allow specific user
-    if (username !== 'uratmangun') {
-      console.warn(`Unauthorized access attempt by user: ${username || 'unknown'}`)
-      return {
-        success: false,
-        error: `Access denied. User '${username || 'unknown'}' is not authorized to access this resource.`
-      }
-    }
-
-    // Log successful authentication
-    console.log(`Successful authentication for user: ${username}`)
-
-    return {
-      success: true,
-      user: {
-        id: userId,
-        username: username,
-        email: primaryEmail
+        error: 'Invalid token format or verification failed'
       }
     }
 

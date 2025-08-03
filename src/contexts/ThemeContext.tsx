@@ -12,7 +12,7 @@ const initialState: ThemeProviderState = {
   setTheme: () => null,
 }
 
-const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
+export const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 
 type ThemeProviderProps = {
   children: React.ReactNode
@@ -34,7 +34,7 @@ export function ThemeProvider({
     if (savedTheme) {
       setTheme(savedTheme)
     }
-  }, [])
+  }, [storageKey])
 
   // Apply theme immediately on mount
   useEffect(() => {
@@ -86,11 +86,4 @@ export function ThemeProvider({
   )
 }
 
-export const useTheme = () => {
-  const context = useContext(ThemeProviderContext)
 
-  if (context === undefined)
-    throw new Error('useTheme must be used within a ThemeProvider')
-
-  return context
-}
