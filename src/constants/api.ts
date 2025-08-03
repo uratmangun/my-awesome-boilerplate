@@ -17,7 +17,7 @@ const isDevelopment =
 // API Base URLs
 const API_URLS = {
   development: 'http://localhost:8000',
-  production: VITE_DENO_API_URL || 'https://redis-boilerplate.deno.dev', // Use env var or fallback
+  production: VITE_DENO_API_URL, // Use env var or fallback
 }
 
 // Get the appropriate base URL
