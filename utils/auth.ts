@@ -30,8 +30,38 @@ export async function validateClerkAuth(request: Request): Promise<AuthResult> {
 
     const sessionToken = authHeader.substring(7) // Remove 'Bearer ' prefix
 
-    // Get Clerk secret key from environment
-    const clerkSecretKey = (globalThis as any).Deno?.env?.get('CLERK_SECRET_KEY')
+    // Get Clerk secret key from environment - try multiple access patterns
+    let clerkSecretKey: string | undefined
+    
+    // Try different environment variable access patterns for Deno Deploy compatibility
+    try {
+      // Pattern 1: Direct Deno.env.get (works in local Deno)
+      if (typeof (globalThis as any).Deno !== 'undefined' && (globalThis as any).Deno.env) {
+        clerkSecretKey = (globalThis as any).Deno.env.get('CLERK_SECRET_KEY')
+      }
+      
+      // Pattern 2: GlobalThis access (for deployment environments)
+      if (!clerkSecretKey && (globalThis as any).Deno?.env) {
+        clerkSecretKey = (globalThis as any).Deno.env.get('CLERK_SECRET_KEY')
+      }
+      
+      // Pattern 3: Process env fallback (for Node.js-like environments)
+      if (!clerkSecretKey && typeof (globalThis as any).process !== 'undefined' && (globalThis as any).process.env) {
+        clerkSecretKey = (globalThis as any).process.env.CLERK_SECRET_KEY
+      }
+      
+      // Debug logging
+      console.log('Environment variable access attempt:')
+      console.log('- Deno available:', typeof (globalThis as any).Deno !== 'undefined')
+      console.log('- GlobalThis.Deno available:', !!(globalThis as any).Deno)
+      console.log('- Process available:', typeof (globalThis as any).process !== 'undefined')
+      console.log('- CLERK_SECRET_KEY found:', !!clerkSecretKey)
+      console.log('- CLERK_SECRET_KEY length:', clerkSecretKey?.length || 0)
+      
+    } catch (error) {
+      console.error('Error accessing environment variables:', error)
+    }
+    
     if (!clerkSecretKey) {
       return {
         success: false,
