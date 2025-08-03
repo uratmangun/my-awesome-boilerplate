@@ -16,7 +16,7 @@ interface AddItemResponse {
     github_description: string
     github_repository_name: string
     homepage_url: string
-    url: string
+    category: string
     is_template: boolean
     createdAt: string
     updatedAt: string
@@ -26,23 +26,6 @@ interface AddItemResponse {
 
 export default {
   async fetch(request: Request): Promise<Response> {
-    // Enhanced CORS handler with Authorization support
-    // const origin = request.headers.get('Origin') || ''
-    // const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000', 'https://your-production-domain.com']
-    // const corsOrigin = allowedOrigins.includes(origin) ? origin : 'http://localhost:5173'
-
-    // const corsHeaders = {
-    //   'Access-Control-Allow-Origin': corsOrigin,
-    //   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, HEAD',
-    //   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    //   'Access-Control-Max-Age': '86400',
-    //   'Vary': 'Origin',
-    // }
-    // // Log request details
-
-    // // Handle preflight requests (OPTIONS)
-    // if (request.method === 'OPTIONS') {
-    // Log ALL request details
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
@@ -242,7 +225,7 @@ export default {
         github_description,
         github_repository_name,
         homepage_url,
-        url: body.url,
+        category: 'my awesome boilerplate',
         is_template,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -258,7 +241,7 @@ export default {
         github_description,
         github_repository_name,
         homepage_url,
-        url: body.url,
+        category: 'my awesome boilerplate',
         is_template: is_template.toString(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -281,7 +264,7 @@ export default {
           github_description: item.github_description,
           github_repository_name: item.github_repository_name,
           homepage_url: item.homepage_url,
-          url: item.url,
+          category: item.category,
           is_template: item.is_template,
           createdAt: item.createdAt,
           updatedAt: item.updatedAt,

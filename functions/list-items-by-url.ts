@@ -2,7 +2,7 @@
 import { connect } from 'https://deno.land/x/redis@v0.32.3/mod.ts'
 
 interface ListItemsByUrlRequest {
-  url: string // Domain name to filter by (e.g., example.com)
+  category: string // Domain name to filter by (e.g., example.com)
   limit?: number // Maximum number of results (default: 50)
 }
 
@@ -16,7 +16,7 @@ interface ListItemsByUrlResponse {
       github_description: string
       github_repository_name: string
       homepage_url: string
-      url: string
+      category: string
       is_template: boolean
       createdAt: string
       updatedAt: string
@@ -67,33 +67,15 @@ export default {
       if (request.method === 'GET') {
         const url = new URL(request.url)
         requestParams = {
-          url: url.searchParams.get('url') || '',
+          category: 'my awesome boilerplate',
           limit: parseInt(url.searchParams.get('limit') || '50'),
         }
       } else {
         const body = await request.json()
         requestParams = {
-          url: body.url || '',
+          category: 'my awesome boilerplate',
           limit: body.limit || 50,
         }
-      }
-
-      // Validate required fields
-      if (!requestParams.url.trim()) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            message: 'URL parameter is required.',
-            timestamp: new Date().toISOString(),
-          }),
-          {
-            status: 400,
-            headers: {
-              'Content-Type': 'application/json',
-              ...corsHeaders,
-            },
-          }
-        )
       }
 
       // Get Redis connection URL from environment
@@ -141,7 +123,7 @@ export default {
         github_description: string
         github_repository_name: string
         homepage_url: string
-        url: string
+        category: string
         is_template: boolean
         createdAt: string
         updatedAt: string
@@ -166,7 +148,7 @@ export default {
               github_description: itemData.github_description || '',
               github_repository_name: itemData.github_repository_name || '',
               homepage_url: itemData.homepage_url || '',
-              url: itemData.url || '',
+              category: itemData.category,
               is_template: itemData.is_template === 'true', // Convert string to boolean
               createdAt: itemData.createdAt || '',
               updatedAt: itemData.updatedAt || '',
@@ -180,7 +162,10 @@ export default {
 
       // Sort by creation date (newest first) and limit results
       const sortedItems = items
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        )
         .slice(0, requestParams.limit)
 
       // Close Redis connection

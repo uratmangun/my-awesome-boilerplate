@@ -5,8 +5,6 @@ import {
   useNavigate,
 } from 'react-router-dom'
 import { ClerkProvider } from '@clerk/clerk-react'
-import { StagewiseToolbar } from '@stagewise/toolbar-react'
-import ReactPlugin from '@stagewise-plugins/react'
 
 import { AISearchPage } from '@/components/AISearchPage'
 import { HomePage } from '@/components/HomePage'
@@ -31,20 +29,11 @@ function App() {
     <ClerkProvider publishableKey={publishableKey}>
       <Router>
         <div className="min-h-screen bg-white dark:bg-gray-900">
-          <StagewiseToolbar
-            config={{
-              plugins: [ReactPlugin],
-            }}
-          />
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/aisearchpage" element={<AISearchPageWrapper />} />
           </Routes>
-          <Toaster 
-            position="top-right" 
-            richColors 
-            closeButton 
-          />
+          <Toaster position="top-right" richColors closeButton />
         </div>
       </Router>
     </ClerkProvider>

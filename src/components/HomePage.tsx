@@ -8,7 +8,16 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Github, Trash2, Copy } from 'lucide-react'
+import {
+  Github,
+  Trash2,
+  Copy,
+  Search,
+  Plus,
+  Star,
+  GitFork,
+  ExternalLink,
+} from 'lucide-react'
 import {
   SignInButton,
   SignedIn,
@@ -227,158 +236,245 @@ export function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 text-gray-900 dark:text-gray-100">
-      {/* Top right sign-in button */}
-      <div className="absolute top-4 right-4 z-10">
-        <SignedOut>
-          <SignInButton mode="modal">
-            <Button size="lg">Sign In</Button>
-          </SignInButton>
-        </SignedOut>
-        <SignedIn>
-          <UserButton />
-        </SignedIn>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-800">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-cyan-400/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-cyan-400/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
       </div>
 
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center mb-16 text-gray-900 dark:text-gray-100">
-          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            My Awesome Boilerplate
+      {/* Header */}
+      <header className="relative z-10 flex justify-between items-center p-6">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-sm">AB</span>
+          </div>
+          <span className="font-semibold text-gray-900 dark:text-white">
+            Awesome Boilerplate
+          </span>
+        </div>
+        <div className="flex items-center space-x-4">
+          <SignedOut>
+            <SignInButton mode="modal">
+              <Button variant="outline" size="sm">
+                Sign In
+              </Button>
+            </SignInButton>
+          </SignedOut>
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="relative z-10 text-center py-20 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="inline-flex items-center px-4 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-full text-sm text-blue-800 dark:text-blue-200 mb-8">
+            <Star className="w-4 h-4 mr-2" />
+            Modern Development Platform
+          </div>
+
+          <h1 className="text-6xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-sky-600 to-cyan-600 bg-clip-text text-transparent leading-tight">
+            Build Amazing
+            <br />
+            Web Applications
           </h1>
-          <p className="text-xl text-muted-foreground dark:text-gray-300 max-w-2xl mx-auto mb-10">
-            A modern, flexible template for building amazing web applications
+
+          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto mb-12 leading-relaxed">
+            A modern, flexible boilerplate template with cutting-edge tools and
+            best practices. Start building your next project in minutes, not
+            hours.
           </p>
 
-          <div className="flex justify-center">
-            <Button variant="outline" size="lg" asChild>
-              <a
-                href="https://github.com/uratmangun/my-awesome-boilerplate"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                View on GitHub
-              </a>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+            <Button
+              size="lg"
+              className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
+              onClick={() =>
+                window.open(
+                  'https://github.com/uratmangun/my-awesome-boilerplate',
+                  '_blank'
+                )
+              }
+            >
+              <Github className="w-5 h-5 mr-2" />
+              View on GitHub
             </Button>
           </div>
 
-          <div className="max-w-md mx-auto mt-8 flex gap-2 items-center">
-            <Input
-              type="search"
-              placeholder="Search repositories..."
-              className="flex-1 h-11"
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === 'Enter') {
-                  searchRepositories()
-                }
-              }}
-            />
-            <Button
-              size="lg"
-              className="h-11"
-              onClick={searchRepositories}
-              disabled={isSearching}
-            >
-              {isSearching ? 'Searching...' : 'Search'}
-            </Button>
-            {isSearchMode && (
+          {/* Search Section */}
+          <div className="max-w-2xl mx-auto">
+            <div className="flex gap-3 items-center">
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Input
+                  type="search"
+                  placeholder="Search repositories and templates..."
+                  className="pl-12 pr-4 py-4 text-lg rounded-full bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-300"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      searchRepositories()
+                    }
+                  }}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  className="rounded-full px-6"
+                  onClick={searchRepositories}
+                  disabled={isSearching}
+                >
+                  {isSearching ? 'Searching...' : 'Search'}
+                </Button>
+                {isSearchMode && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full"
+                    onClick={clearSearch}
+                  >
+                    Clear
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {isAuthorizedUser && (
               <Button
                 variant="outline"
                 size="lg"
-                className="h-11"
-                onClick={clearSearch}
+                className="mt-6 px-8 py-3 rounded-full border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 transition-all duration-300"
+                onClick={() => setIsModalOpen(true)}
               >
-                Clear
+                <Plus className="w-5 h-5 mr-2" />
+                Add New Repository
               </Button>
             )}
           </div>
-          {isAuthorizedUser && (
-            <div className="max-w-md mx-auto mt-4">
-              <Button
-                variant="default"
-                size="lg"
-                className="w-full"
-                onClick={() => setIsModalOpen(true)}
-              >
-                Add Project
-              </Button>
-            </div>
-          )}
         </div>
+      </section>
 
-        <div className="max-w-4xl mx-auto mb-16">
-          {/* Clerk authentication components moved to header section */}
-        </div>
-
-        {/* Repository List Section */}
-        <div className="max-w-6xl mx-auto mb-16">
-          <h2 className="text-3xl font-bold text-center mb-8 text-gray-900 dark:text-gray-100">
-            {isSearchMode
-              ? `Search Results (${searchResults.length})`
-              : 'Added Repositories'}
-          </h2>
+      {/* Repository Grid */}
+      <section className="relative z-10 py-16 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              {isSearchMode
+                ? `Search Results (${searchResults.length})`
+                : 'Repository Collection'}
+            </h2>
+            <p className="text-lg text-gray-600 dark:text-gray-300">
+              Discover and manage your development projects
+            </p>
+          </div>
 
           {isSearching ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">Searching repositories...</p>
+            <div className="text-center py-16">
+              <div className="inline-flex items-center px-6 py-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mr-3"></div>
+                <span className="text-blue-800 dark:text-blue-200">
+                  Searching repositories...
+                </span>
+              </div>
             </div>
           ) : isLoadingRepos && !isSearchMode ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">Loading repositories...</p>
+            <div className="text-center py-16">
+              <div className="inline-flex items-center px-6 py-3 bg-gray-100 dark:bg-gray-800 rounded-full">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600 mr-3"></div>
+                <span className="text-gray-600 dark:text-gray-300">
+                  Loading repositories...
+                </span>
+              </div>
             </div>
           ) : repoError && !isSearchMode ? (
-            <div className="text-center py-8">
-              <p className="text-red-600 dark:text-red-400">{repoError}</p>
+            <div className="text-center py-16">
+              <div className="max-w-md mx-auto p-6 bg-red-50 dark:bg-red-900/20 rounded-2xl border border-red-200 dark:border-red-800">
+                <p className="text-red-600 dark:text-red-400">{repoError}</p>
+              </div>
             </div>
           ) : isSearchMode && searchResults.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">
-                No repositories found matching your search. Try different
-                keywords!
-              </p>
+            <div className="text-center py-16">
+              <div className="max-w-md mx-auto p-8 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700">
+                <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 dark:text-gray-300 mb-2">
+                  No repositories found
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Try different keywords or clear your search
+                </p>
+              </div>
             </div>
           ) : !isSearchMode && repositories.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">
-                No repositories added yet. Add your first repository above!
-              </p>
+            <div className="text-center py-16">
+              <div className="max-w-md mx-auto p-8 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700">
+                <Github className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 dark:text-gray-300 mb-2">
+                  No repositories yet
+                </p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Add your first repository to get started
+                </p>
+              </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {(isSearchMode ? searchResults : repositories).map(
-                (repo: Repository) => (
+                (repo: Repository, index) => (
                   <Card
                     key={repo.id}
-                    className="p-6 hover:shadow-lg transition-shadow"
+                    className="group hover:shadow-2xl transition-all duration-500 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg hover:scale-105 rounded-2xl overflow-hidden"
+                    style={{
+                      animationDelay: `${index * 100}ms`,
+                      animation: 'fadeInUp 0.6s ease-out forwards',
+                    }}
                   >
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-lg flex items-center gap-2 text-blue-600 dark:text-blue-300">
-                        <Github className="h-5 w-5" />
-                        {repo.github_repository_name}
-                      </CardTitle>
+                    <CardHeader className="pb-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-sky-500 rounded-lg flex items-center justify-center">
+                            <Github className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                              {repo.github_repository_name.split('/')[1] ||
+                                repo.github_repository_name}
+                            </CardTitle>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              {repo.github_repository_name.split('/')[0]}
+                            </p>
+                          </div>
+                        </div>
+                        {repo.is_template && (
+                          <div className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-xs rounded-full">
+                            Template
+                          </div>
+                        )}
+                      </div>
                     </CardHeader>
-                    <CardContent className="pb-3">
-                      <CardDescription className="text-sm text-muted-foreground mb-3">
+
+                    <CardContent className="pb-4">
+                      <CardDescription className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
                         {repo.github_description || 'No description available'}
                       </CardDescription>
-                      <div className="text-xs text-muted-foreground">
-                        <p>
-                          Added: {new Date(repo.createdAt).toLocaleDateString()}
-                        </p>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
+                        Added {new Date(repo.createdAt).toLocaleDateString()}
                       </div>
                     </CardContent>
-                    <CardFooter className="pt-3 flex flex-col gap-2">
-                      {/* Template Creation Section - Only show for template repositories */}
+
+                    <CardFooter className="pt-4 flex flex-col space-y-3">
                       {repo.is_template && (
-                        <div className="mb-2 p-3 bg-blue-50 dark:bg-blue-950 rounded-md border border-blue-200 dark:border-blue-800">
+                        <div className="w-full p-3 bg-gradient-to-r from-blue-50 to-sky-50 dark:from-blue-900/20 dark:to-sky-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
                           <div className="flex items-center justify-between">
-                            <div className="flex-1">
-                              <p className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-1">
-                                📋 Template Repository
+                            <div>
+                              <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                                📋 Ready to Clone
                               </p>
                               <p className="text-xs text-blue-600 dark:text-blue-300">
-                                Create a new repo based on this template
+                                Create new project from template
                               </p>
                             </div>
                             <Button
@@ -387,28 +483,28 @@ export function HomePage() {
                               onClick={() =>
                                 createFromTemplate(repo.github_repository_name)
                               }
-                              className="ml-2 text-blue-600 hover:text-blue-700 hover:bg-blue-100 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900"
-                              title="Create repository from template using GitHub CLI"
+                              className="border-blue-200 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30"
                             >
-                              <Copy className="h-4 w-4" />
+                              <Copy className="w-4 h-4" />
                             </Button>
                           </div>
                         </div>
                       )}
+
                       <div className="flex gap-2 w-full">
                         <Button
                           variant="outline"
                           size="sm"
                           asChild
-                          className="flex-1"
+                          className="flex-1 rounded-lg"
                         >
                           <a
                             href={`https://github.com/${repo.github_repository_name}`}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
-                            <Github className="h-4 w-4 mr-1" />
-                            View Repo
+                            <Github className="w-4 h-4 mr-2" />
+                            Repository
                           </a>
                         </Button>
                         {repo.homepage_url && (
@@ -416,27 +512,29 @@ export function HomePage() {
                             variant="outline"
                             size="sm"
                             asChild
-                            className="flex-1"
+                            className="flex-1 rounded-lg"
                           >
                             <a
                               href={repo.homepage_url}
                               target="_blank"
                               rel="noopener noreferrer"
                             >
-                              🌐 Homepage
+                              <ExternalLink className="w-4 h-4 mr-2" />
+                              Live Site
                             </a>
                           </Button>
                         )}
                       </div>
+
                       {isAuthorizedUser && (
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => deleteRepository(repo.id)}
-                          className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950"
+                          className="w-full text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 border-red-200 dark:border-red-800 rounded-lg"
                         >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Delete Repository
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Remove Repository
                         </Button>
                       )}
                     </CardFooter>
@@ -446,32 +544,91 @@ export function HomePage() {
             </div>
           )}
         </div>
-      </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="relative z-10 py-16 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center p-8 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl border border-gray-200 dark:border-gray-700">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <Github className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                {repositories.length}
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                Active Repositories
+              </p>
+            </div>
+
+            <div className="text-center p-8 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl border border-gray-200 dark:border-gray-700">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <Copy className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                {repositories.filter(repo => repo.is_template).length}
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300">
+                Template Projects
+              </p>
+            </div>
+
+            <div className="text-center p-8 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl border border-gray-200 dark:border-gray-700">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                <GitFork className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                {user ? 'Active' : 'Guest'}
+              </h3>
+              <p className="text-gray-600 dark:text-gray-300">User Status</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Add Project Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-xl max-w-md w-full">
-            <h2 className="text-xl font-bold mb-4">Add GitHub Project</h2>
+        <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setIsModalOpen(false)}
+          ></div>
+          <div className="relative bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl max-w-md w-full border border-gray-200 dark:border-gray-700">
+            <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
+              Add GitHub Repository
+            </h2>
+
             {submissionMessage && (
-              <div className="mb-4 p-2 bg-green-100 text-green-800 rounded-md">
+              <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-200 rounded-xl border border-green-200 dark:border-green-800">
                 {submissionMessage}
               </div>
             )}
             {submissionError && (
-              <div className="mb-4 p-2 bg-red-100 text-red-800 rounded-md">
+              <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-xl border border-red-200 dark:border-red-800">
                 {submissionError}
               </div>
             )}
-            <Input
-              type="text"
-              placeholder="https://github.com/username/repo"
-              value={githubRepo}
-              onChange={e => setGithubRepo(e.target.value)}
-              className="mb-4"
-            />
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Repository URL
+              </label>
+              <Input
+                type="text"
+                placeholder="https://github.com/username/repository"
+                value={githubRepo}
+                onChange={e => setGithubRepo(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400"
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setIsModalOpen(false)}
+                className="flex-1 py-3 rounded-xl"
+              >
                 Cancel
               </Button>
               <Button
@@ -535,13 +692,34 @@ export function HomePage() {
                   }
                 }}
                 disabled={isSubmitting}
+                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
               >
-                {isSubmitting ? 'Adding...' : 'Add Repository'}
+                {isSubmitting ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    Adding...
+                  </div>
+                ) : (
+                  'Add Repository'
+                )}
               </Button>
             </div>
           </div>
         </div>
       )}
+
+      <style jsx>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   )
 }

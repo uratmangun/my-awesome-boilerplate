@@ -6,8 +6,6 @@
     "npm:@google/genai@*": "1.12.0",
     "npm:@google/generative-ai@0.21": "0.21.0",
     "npm:@radix-ui/react-slot@^1.2.3": "1.2.3_@types+react@18.3.23_react@18.3.1",
-    "npm:@stagewise-plugins/react@~0.6.2": "0.6.2_@stagewise+toolbar@0.6.2",
-    "npm:@stagewise/toolbar-react@~0.6.2": "0.6.2_@types+react@18.3.23_react@18.3.1",
     "npm:@tailwindcss/postcss@^4.1.11": "4.1.11",
     "npm:@tailwindcss/vite@^4.1.11": "4.1.11_vite@7.0.6__picomatch@4.0.3",
     "npm:@types/react-dom@^18.3.0": "18.3.7_@types+react@18.3.23",
@@ -666,23 +664,6 @@
       "integrity": "sha512-CvUo2ixeIQGtF6WvuB87XWqPQkoFAFqW+HUo/WzHwuHDvIwZCtjdWXoYCcr06iKGydiqTclC4jU/TNObC/xKZg==",
       "os": ["win32"],
       "cpu": ["x64"]
-    },
-    "@stagewise-plugins/react@0.6.2_@stagewise+toolbar@0.6.2": {
-      "integrity": "sha512-IZVWgxeO2GFQj8wTFacIkmlF7YlZn4T5MN3cyrYo5wdYo2RATGIX4+pugPmPYQUjq2Gm+OSLR2hxKfBq32Y2Qg==",
-      "dependencies": [
-        "@stagewise/toolbar"
-      ]
-    },
-    "@stagewise/toolbar-react@0.6.2_@types+react@18.3.23_react@18.3.1": {
-      "integrity": "sha512-fKgINBKCgUWzeSdP8Nfs5cSchCS4yf9bMOROnVqAgMbT77yGhZ4nYWGNL/nkaCAkE7uyrpSvtbHT4ut2PDoJLw==",
-      "dependencies": [
-        "@stagewise/toolbar",
-        "@types/react",
-        "react"
-      ]
-    },
-    "@stagewise/toolbar@0.6.2": {
-      "integrity": "sha512-WN7PWaOT6YQKjJYL4/85V5UU0eZEws+/UBT/J4wJOEbFxoluLuchqh7xVTmUZTtw0q0xpzlgX8Vb0kAZf/pjmw=="
     },
     "@tailwindcss/node@4.1.11": {
       "integrity": "sha512-yzhzuGRmv5QyU9qLNg4GTlYI6STedBWRE7NjxP45CsFYYq9taI0zJXZBMqIC/c8fViNLhmrbpSFS57EoxUmD6Q==",
@@ -2677,7 +2658,9 @@
     "https://deno.land/std@0.218.0/bytes/copy.ts": "f29c03168853720dfe82eaa57793d0b9e3543ebfe5306684182f0f1e3bfd422a",
     "https://deno.land/std@0.218.0/io/buf_reader.ts": "c73aad99491ee6db3d6b001fa4a780e9245c67b9296f5bad9c0fa7384e35d47a",
     "https://deno.land/std@0.218.0/io/buf_writer.ts": "f82f640c8b3a820f600a8da429ad0537037c7d6a78426bbca2396fb1f75d3ef4",
+    "https://deno.land/std@0.218.0/io/types.ts": "acecb3074c730b5ff487ba4fe9ce51e67bd982aa07c95e5f5679b7b2f24ad129",
     "https://deno.land/x/redis@v0.32.3/backoff.ts": "33e4a6e245f8743fbae0ce583993a671a3ac2ecee433a3e7f0bd77b5dd541d84",
+    "https://deno.land/x/redis@v0.32.3/command.ts": "aa2312d4093ec7c72d61d32a71d3d13a33cc6302ca78c8f026e1994e76541e6e",
     "https://deno.land/x/redis@v0.32.3/connection.ts": "393f1960f7ea2569ef5542c1dd7b54d5549487cf21443778553005f762bad879",
     "https://deno.land/x/redis@v0.32.3/errors.ts": "4c47b278c8a87e0f49c0f7a96c74c5bee09e4d5ea19f892923b0281707112d04",
     "https://deno.land/x/redis@v0.32.3/executor.ts": "5ac4c1f7bec44d12ebc0f3702bf074bd3ba6c1aae74953582f6358d2948718e7",
@@ -2689,6 +2672,7 @@
     "https://deno.land/x/redis@v0.32.3/protocol/deno_streams/mod.ts": "346d473bd4e834e397ca25bbbf1021f44e577adda8d6391a41bd03b7bc8c72f4",
     "https://deno.land/x/redis@v0.32.3/protocol/deno_streams/reply.ts": "2707e9fe18608c1a9a49b4f0094397c7400141b8208170c7bcb128ceb5ddd790",
     "https://deno.land/x/redis@v0.32.3/protocol/shared/command.ts": "71639adc162dac95fa41d701a7112bcd5d5cf3fd22c1307c8840f983628540be",
+    "https://deno.land/x/redis@v0.32.3/protocol/shared/protocol.ts": "5b9284ee28ec74dfc723c7c7f07dca8d5f9d303414f36689503622dfdde12551",
     "https://deno.land/x/redis@v0.32.3/protocol/shared/reply.ts": "3311ff66357bacbd60785cb43b97539c341d8a7d963bc5e80cb864ac81909ea5",
     "https://deno.land/x/redis@v0.32.3/protocol/shared/types.ts": "3d1ff5983abc1e4e56c751aaf4672042c87334cd004ce2fc0493575432151e1f",
     "https://deno.land/x/redis@v0.32.3/pubsub.ts": "a36892455b0a4a50af169332a165b0985cc90d84486087f036e507e3137b2afb",
@@ -2709,8 +2693,6 @@
         "npm:@clerk/clerk-react@^5.38.1",
         "npm:@eslint/js@^9.30.1",
         "npm:@radix-ui/react-slot@^1.2.3",
-        "npm:@stagewise-plugins/react@~0.6.2",
-        "npm:@stagewise/toolbar-react@~0.6.2",
         "npm:@tailwindcss/postcss@^4.1.11",
         "npm:@tailwindcss/vite@^4.1.11",
         "npm:@types/react-dom@^18.3.0",

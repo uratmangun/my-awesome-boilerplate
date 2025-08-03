@@ -392,7 +392,7 @@ export function AISearchPage({ onBack }: AISearchPageProps) {
       case 'Tutorial':
         return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
       case 'Best Practices':
-        return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
       case 'AI Generated':
         return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
       case 'User Added':
@@ -417,8 +417,8 @@ export function AISearchPage({ onBack }: AISearchPageProps) {
             Back to Home
           </Button>
           <div className="flex items-center gap-2">
-            <Bot className="h-6 w-6 text-purple-600" />
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            <Bot className="h-6 w-6 text-blue-600" />
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
               AI Semantic Search
             </h1>
           </div>
@@ -650,7 +650,7 @@ export function AISearchPage({ onBack }: AISearchPageProps) {
                       <div className="flex items-center gap-2">
                         <div className="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                           <div
-                            className="bg-purple-600 h-2 rounded-full"
+                            className="bg-blue-600 h-2 rounded-full"
                             style={{ width: `${item.relevanceScore * 100}%` }}
                           />
                         </div>

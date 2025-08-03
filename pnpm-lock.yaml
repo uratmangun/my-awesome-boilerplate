@@ -14,12 +14,6 @@ importers:
       '@radix-ui/react-slot':
         specifier: ^1.2.3
         version: 1.2.3(@types/react@18.3.23)(react@18.3.1)
-      '@stagewise-plugins/react':
-        specifier: ^0.6.2
-        version: 0.6.2(@stagewise/toolbar@0.6.2)
-      '@stagewise/toolbar-react':
-        specifier: ^0.6.2
-        version: 0.6.2(@types/react@18.3.23)(react@18.3.1)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -592,20 +586,6 @@ packages:
     resolution: {integrity: sha512-7GVB4luhFmGUNXXJhH2jJwZCFB3pIOixv2E3s17GQHBFUOQaISlt7aGcQgqvCaDSxTZJUzlK/QJ1FN8S94MrzQ==}
     cpu: [x64]
     os: [win32]
-
-  '@stagewise-plugins/react@0.6.2':
-    resolution: {integrity: sha512-IZVWgxeO2GFQj8wTFacIkmlF7YlZn4T5MN3cyrYo5wdYo2RATGIX4+pugPmPYQUjq2Gm+OSLR2hxKfBq32Y2Qg==}
-    peerDependencies:
-      '@stagewise/toolbar': 0.6.2
-
-  '@stagewise/toolbar-react@0.6.2':
-    resolution: {integrity: sha512-fKgINBKCgUWzeSdP8Nfs5cSchCS4yf9bMOROnVqAgMbT77yGhZ4nYWGNL/nkaCAkE7uyrpSvtbHT4ut2PDoJLw==}
-    peerDependencies:
-      '@types/react': '>=18.0.0'
-      react: '>=18.0.0'
-
-  '@stagewise/toolbar@0.6.2':
-    resolution: {integrity: sha512-WN7PWaOT6YQKjJYL4/85V5UU0eZEws+/UBT/J4wJOEbFxoluLuchqh7xVTmUZTtw0q0xpzlgX8Vb0kAZf/pjmw==}
 
   '@tailwindcss/node@4.1.11':
     resolution: {integrity: sha512-yzhzuGRmv5QyU9qLNg4GTlYI6STedBWRE7NjxP45CsFYYq9taI0zJXZBMqIC/c8fViNLhmrbpSFS57EoxUmD6Q==}
@@ -2122,18 +2102,6 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.46.1':
     optional: true
-
-  '@stagewise-plugins/react@0.6.2(@stagewise/toolbar@0.6.2)':
-    dependencies:
-      '@stagewise/toolbar': 0.6.2
-
-  '@stagewise/toolbar-react@0.6.2(@types/react@18.3.23)(react@18.3.1)':
-    dependencies:
-      '@stagewise/toolbar': 0.6.2
-      '@types/react': 18.3.23
-      react: 18.3.1
-
-  '@stagewise/toolbar@0.6.2': {}
 
   '@tailwindcss/node@4.1.11':
     dependencies:

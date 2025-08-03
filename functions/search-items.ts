@@ -19,7 +19,7 @@ interface SearchItemsResponse {
       github_description: string
       github_repository_name: string
       homepage_url: string
-      url: string
+      category: string
       createdAt: string
       updatedAt: string
       score: number // Similarity score (higher = more similar)
@@ -203,7 +203,7 @@ export default {
         github_description: string
         github_repository_name: string
         homepage_url: string
-        url: string
+        category: string
         createdAt: string
         updatedAt: string
         score: number
@@ -261,7 +261,7 @@ export default {
             github_description: itemData.github_description || '',
             github_repository_name: itemData.github_repository_name || '',
             homepage_url: itemData.homepage_url || '',
-            url: itemData.url || '',
+            category: itemData.category || 'my awesome boilerplate',
             createdAt: itemData.createdAt || '',
             updatedAt: itemData.updatedAt || '',
             score: similarity,
