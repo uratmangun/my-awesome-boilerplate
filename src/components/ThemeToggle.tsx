@@ -1,6 +1,6 @@
 import { Moon, Sun } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useTheme } from '@/hooks/useTheme'
+import { useTheme } from '@/contexts/ThemeContext'
 
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
@@ -39,7 +39,7 @@ export function ThemeToggle() {
       size="icon"
       onClick={toggleTheme}
       title={getTooltip()}
-      className="fixed top-4 right-4 z-50 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-white hover:bg-gray-100 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white"
+      className="fixed top-4 left-4 z-50 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-white hover:bg-gray-100 hover:text-black dark:hover:bg-gray-700 dark:hover:text-white"
     >
       {getIcon()}
       <span className="sr-only">Toggle theme</span>

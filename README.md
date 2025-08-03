@@ -1,4 +1,4 @@
-# Redis AI Vector Search Boilerplate
+# My Awesome Boilerplate
 
 A modern full-stack application demonstrating AI-powered semantic search using Redis vector similarity, built with React, TypeScript, and Deno. This project showcases how to implement intelligent search functionality with text embeddings and vector databases.
 

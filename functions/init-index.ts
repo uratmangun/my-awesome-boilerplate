@@ -1,5 +1,6 @@
 // Deno function to initialize Redis search index for vector similarity
 import { createItemsIndex, checkIndexExists } from '../utils/redis-index.ts'
+import { validateClerkAuth, createUnauthorizedResponse, createServerErrorResponse } from '../utils/auth.ts'
 
 interface InitIndexResponse {
   success: boolean
@@ -10,11 +11,18 @@ interface InitIndexResponse {
 
 export default {
   async fetch(request: Request): Promise<Response> {
-    // Handle CORS for development
+    // Handle CORS for development with Authorization support
+    const origin = request.headers.get('Origin') || ''
+    const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000', 'https://your-production-domain.com']
+    const corsOrigin = allowedOrigins.includes(origin) ? origin : 'http://localhost:5173'
+    
     const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': corsOrigin,
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Accept, Accept-Language, Content-Language, Content-Type, Authorization, authorization, X-Requested-With, Origin, Access-Control-Request-Method, Access-Control-Request-Headers',
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Max-Age': '86400',
+      'Vary': 'Origin',
     }
 
     // Handle preflight requests
@@ -41,6 +49,15 @@ export default {
             ...corsHeaders,
           },
         }
+      )
+    }
+
+    // Validate authentication
+    const authResult = await validateClerkAuth(request)
+    if (!authResult.success) {
+      return createUnauthorizedResponse(
+        authResult.error || 'Authentication required',
+        corsHeaders
       )
     }
 

@@ -39,19 +39,17 @@ export async function createItemsIndex(
     ON JSON
         PREFIX 1 "item:"
     SCHEMA
-    "$.title" as title TEXT NOSTEM SORTABLE
-    "$.content" as content TEXT NOSTEM SORTABLE
-    "$.category" as category TAG
+    "$.github_description" as github_description TEXT NOSTEM SORTABLE
+    "$.github_repository_name" as github_repository_name TEXT NOSTEM SORTABLE
     "$.createdAt" as createdAt TEXT SORTABLE
     "$.updatedAt" as updatedAt TEXT SORTABLE
-    "$.expiresAt" as expiresAt TEXT SORTABLE
-    "$.titleEmbeddings" as titleEmbeddings VECTOR "FLAT" 6
+    "$.descriptionEmbeddings" as descriptionEmbeddings VECTOR "FLAT" 6
             "TYPE" FLOAT32
             "DIM" 768
             "DISTANCE_METRIC" "COSINE"
             "INITIAL_CAP" 100
             "BLOCK_SIZE" 100
-    "$.contentEmbeddings" as contentEmbeddings VECTOR "FLAT" 6
+    "$.repositoryEmbeddings" as repositoryEmbeddings VECTOR "FLAT" 6
             "TYPE" FLOAT32
             "DIM" 768
             "DISTANCE_METRIC" "COSINE"
@@ -78,12 +76,12 @@ export async function createItemsIndex(
     console.log('Redis connection verified successfully')
     console.log(`Successfully created index: ${ITEMS_INDEX_KEY}`)
     console.log('Index includes:')
-    console.log('- Text fields: title, content, category')
-    console.log('- Date fields: createdAt, updatedAt, expiresAt')
+    console.log('- Text fields: github_description, github_repository_name')
+    console.log('- Date fields: createdAt, updatedAt')
     console.log(
-      '- Vector fields: titleEmbeddings, contentEmbeddings, combinedEmbeddings'
+      '- Vector fields: descriptionEmbeddings, repositoryEmbeddings, combinedEmbeddings'
     )
-    console.log('- Vector algorithm: FLAT for title/content, HNSW for combined')
+    console.log('- Vector algorithm: FLAT for description/repository, HNSW for combined')
     console.log('- Distance metric: COSINE similarity')
   } catch (error) {
     console.error('Error creating Redis index:', error)

@@ -1,11 +1,12 @@
 // Deno function to search items using vector similarity (cosine similarity)
 import { connect } from 'https://deno.land/x/redis@v0.32.3/mod.ts'
 import { generateTextEmbeddings } from '../utils/text-embeddings.ts'
+import { validateClerkAuth, createUnauthorizedResponse, createServerErrorResponse } from '../utils/auth.ts'
 
 interface SearchItemsRequest {
   query: string
   limit?: number // Maximum number of results (default: 5)
-  searchType?: 'title' | 'content' | 'combined' // Which embeddings to search (default: combined)
+  searchType?: 'description' | 'repository' | 'combined' // Which embeddings to search (default: combined)
 }
 
 interface SearchItemsResponse {
@@ -15,12 +16,12 @@ interface SearchItemsResponse {
     total: number
     items: Array<{
       id: string
-      title: string
-      content: string
-      category: string
+      github_description: string
+      github_repository_name: string
+      homepage_url: string
+      url: string
       createdAt: string
       updatedAt: string
-      expiresAt: string
       score: number // Similarity score (higher = more similar)
     }>
   }
@@ -29,17 +30,22 @@ interface SearchItemsResponse {
 
 export default {
   async fetch(request: Request): Promise<Response> {
-    // Handle CORS for development
+    // Enhanced CORS handler
+    const origin = request.headers.get('Origin') || '*'
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, HEAD',
+      'Access-Control-Allow-Headers': 'Accept, Accept-Language, Content-Language, Content-Type, Authorization, authorization, X-Requested-With, Origin, Access-Control-Request-Method, Access-Control-Request-Headers',
+      'Access-Control-Max-Age': '86400',
+      'Vary': 'Origin',
     }
 
-    // Handle preflight requests
+    // Handle preflight requests (OPTIONS)
     if (request.method === 'OPTIONS') {
+      console.log('Handling CORS preflight request')
+      console.log('Request headers:', Object.fromEntries(request.headers.entries()))
       return new Response(null, {
-        status: 200,
+        status: 204,
         headers: corsHeaders,
       })
     }
@@ -62,6 +68,15 @@ export default {
       )
     }
 
+    // Validate authentication
+    const authResult = await validateClerkAuth(request)
+    if (!authResult.success) {
+      return createUnauthorizedResponse(
+        authResult.error || 'Authentication required',
+        corsHeaders
+      )
+    }
+
     try {
       let searchParams: SearchItemsRequest
 
@@ -73,8 +88,8 @@ export default {
           limit: parseInt(url.searchParams.get('limit') || '5'),
           searchType:
             (url.searchParams.get('searchType') as
-              | 'title'
-              | 'content'
+              | 'description'
+              | 'repository'
               | 'combined') || 'combined',
         }
       } else {
@@ -154,14 +169,16 @@ export default {
       // Use basic Redis operations for vector similarity search (compatible with basic Redis)
       let embeddingField: string
       switch (searchParams.searchType) {
-        case 'title':
-          embeddingField = 'titleEmbeddings'
+        case 'description':
+          embeddingField = 'descriptionEmbeddings'
           break
-        case 'content':
-          embeddingField = 'contentEmbeddings'
+        case 'repository':
+          embeddingField = 'repositoryEmbeddings'
           break
+        case 'combined':
         default:
           embeddingField = 'combinedEmbeddings'
+          break
       }
 
       // Get all item keys (scan for item:* pattern)
@@ -179,12 +196,12 @@ export default {
       // Calculate similarity scores for each item
       const items: Array<{
         id: string
-        title: string
-        content: string
-        category: string
+        github_description: string
+        github_repository_name: string
+        homepage_url: string
+        url: string
         createdAt: string
         updatedAt: string
-        expiresAt: string
         score: number
       }> = []
 
@@ -237,12 +254,12 @@ export default {
 
           items.push({
             id: itemKey,
-            title: itemData.title || '',
-            content: itemData.content || '',
-            category: itemData.category || '',
+            github_description: itemData.github_description || '',
+            github_repository_name: itemData.github_repository_name || '',
+            homepage_url: itemData.homepage_url || '',
+            url: itemData.url || '',
             createdAt: itemData.createdAt || '',
             updatedAt: itemData.updatedAt || '',
-            expiresAt: itemData.expiresAt || '',
             score: similarity,
           })
         } catch (itemError) {

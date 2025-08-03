@@ -3,6 +3,9 @@
  * Handles different API URLs for local development and production environments
  */
 
+// Get API URL from environment variable or use fallback
+const VITE_DENO_API_URL = import.meta.env.VITE_DENO_API_URL
+
 // Determine if we're in development or production (browser-based detection)
 const isDevelopment =
   typeof window !== 'undefined' &&
@@ -14,7 +17,7 @@ const isDevelopment =
 // API Base URLs
 const API_URLS = {
   development: 'http://localhost:8000',
-  production: 'https://redis-boilerplate.deno.dev', // Based on repo name from deploy.yml
+  production: VITE_DENO_API_URL || 'https://redis-boilerplate.deno.dev', // Use env var or fallback
 }
 
 // Get the appropriate base URL
@@ -28,6 +31,7 @@ export const API_ENDPOINTS = {
   ADD_ITEM: `${API_BASE_URL}/functions/add-item`,
   GET_ITEM: `${API_BASE_URL}/functions/get-item`,
   DELETE_ITEM: `${API_BASE_URL}/functions/delete-item`,
+  LIST_ITEMS_BY_URL: `${API_BASE_URL}/functions/list-items-by-url`,
   INIT_INDEX: `${API_BASE_URL}/functions/init-index`,
 } as const
 

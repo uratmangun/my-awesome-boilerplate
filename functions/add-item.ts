@@ -1,12 +1,11 @@
 // Deno function to add items to Redis database with vector embeddings
 import { connect } from 'https://deno.land/x/redis@v0.32.3/mod.ts'
 import { generateTextEmbeddings } from '../utils/text-embeddings.ts'
+import { validateClerkAuth, createUnauthorizedResponse, createServerErrorResponse } from '../utils/auth.ts'
 
 interface AddItemRequest {
-  title: string
-  content: string
-  category?: string
-  ttlSeconds?: number // Time to live in seconds (optional, defaults to 1 day)
+  github_repository_url: string // GitHub repository URL (e.g., https://github.com/owner/repo)
+  url: string // Domain name (e.g., example.com)
 }
 
 interface AddItemResponse {
@@ -14,33 +13,49 @@ interface AddItemResponse {
   message: string
   item?: {
     id: string
-    title: string
-    content: string
-    category: string
+    github_description: string
+    github_repository_name: string
+    homepage_url: string
+    url: string
+    is_template: boolean
     createdAt: string
     updatedAt: string
-    expiresAt: string // ISO string of expiration time (required)
   }
   timestamp: string
 }
 
 export default {
   async fetch(request: Request): Promise<Response> {
-    // Handle CORS for development
+    // Enhanced CORS handler with Authorization support
+    // const origin = request.headers.get('Origin') || ''
+    // const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000', 'https://your-production-domain.com']
+    // const corsOrigin = allowedOrigins.includes(origin) ? origin : 'http://localhost:5173'
+    
+    // const corsHeaders = {
+    //   'Access-Control-Allow-Origin': corsOrigin,
+    //   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, HEAD',
+    //   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    //   'Access-Control-Max-Age': '86400',
+    //   'Vary': 'Origin',
+    // }
+    // // Log request details
+   
+    // // Handle preflight requests (OPTIONS)
+    // if (request.method === 'OPTIONS') {
+    // Log ALL request details
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     }
 
     // Handle preflight requests
     if (request.method === 'OPTIONS') {
       return new Response(null, {
-        status: 200,
+        status: 204,
         headers: corsHeaders,
       })
     }
-
     // Only allow POST requests
     if (request.method !== 'POST') {
       return new Response(
@@ -59,16 +74,25 @@ export default {
       )
     }
 
+    // Validate authentication
+    const authResult = await validateClerkAuth(request)
+    if (!authResult.success) {
+      return createUnauthorizedResponse(
+        authResult.error || 'Authentication required',
+        corsHeaders
+      )
+    }
+
     try {
       // Parse request body
       const body: AddItemRequest = await request.json()
 
       // Validate required fields
-      if (!body.title || !body.content) {
+      if (!body.github_repository_url || !body.url) {
         return new Response(
           JSON.stringify({
             success: false,
-            message: 'Title and content are required fields.',
+            message: 'github_repository_url and url are required.',
             timestamp: new Date().toISOString(),
           }),
           {
@@ -108,30 +132,89 @@ export default {
         password: new URL(redisUrl).password || undefined,
       })
 
+      // Parse GitHub repository URL to extract owner and repo name
+      const githubUrlMatch = body.github_repository_url.match(/github\.com\/([^/]+)\/([^/]+)(?:\.git)?(?:\/.*)?$/)
+      if (!githubUrlMatch) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            message: 'Invalid GitHub repository URL format. Expected: https://github.com/owner/repo',
+            timestamp: new Date().toISOString(),
+          }),
+          {
+            status: 400,
+            headers: {
+              'Content-Type': 'application/json',
+              ...corsHeaders,
+            },
+          }
+        )
+      }
+
+      const [, owner, repo] = githubUrlMatch
+
+      // Fetch repository information from GitHub API
+      let repoData: any
+      try {
+        const githubResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}`)
+        if (!githubResponse.ok) {
+          return new Response(
+            JSON.stringify({
+              success: false,
+              message: `Failed to fetch repository information from GitHub: ${githubResponse.status} ${githubResponse.statusText}`,
+              timestamp: new Date().toISOString(),
+            }),
+            {
+              status: 400,
+              headers: {
+                'Content-Type': 'application/json',
+                ...corsHeaders,
+              },
+            }
+          )
+        }
+        repoData = await githubResponse.json()
+      } catch (error) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            message: 'Failed to connect to GitHub API',
+            timestamp: new Date().toISOString(),
+          }),
+          {
+            status: 500,
+            headers: {
+              'Content-Type': 'application/json',
+              ...corsHeaders,
+            },
+          }
+        )
+      }
+
+      // Extract repository information
+      const github_repository_name = repoData.full_name || `${owner}/${repo}`
+      const github_description = repoData.description || 'No description available'
+      const homepage_url = repoData.homepage || ''
+      const is_template = repoData.is_template || false
+
       // Generate unique item ID
       const itemId = `item:${Date.now()}:${Math.random().toString(36).substr(2, 9)}`
 
-      // Set TTL to provided value or default to 1 day (86400 seconds)
-      const ttlSeconds = body.ttlSeconds || 86400 // Default: 24 hours
-
-      // Calculate expiration time (always required now)
-      const expiresAt = new Date(Date.now() + ttlSeconds * 1000).toISOString()
-
-      // Generate vector embeddings for title and content
-      const titleEmbedding = await generateTextEmbeddings(body.title)
-      const contentEmbedding = await generateTextEmbeddings(body.content)
-      const combinedText = `${body.title} ${body.content}`
+      // Generate vector embeddings for github_description and github_repository_name
+      const descriptionEmbedding = await generateTextEmbeddings(github_description)
+      const repositoryEmbedding = await generateTextEmbeddings(github_repository_name)
+      const combinedText = `${github_description} ${github_repository_name}`
       const combinedEmbedding = await generateTextEmbeddings(combinedText)
 
       if (
-        titleEmbedding.error ||
-        contentEmbedding.error ||
+        descriptionEmbedding.error ||
+        repositoryEmbedding.error ||
         combinedEmbedding.error
       ) {
         return new Response(
           JSON.stringify({
             success: false,
-            message: 'Failed to generate embeddings for text content.',
+            message: 'Failed to generate embeddings for GitHub content.',
             timestamp: new Date().toISOString(),
           }),
           {
@@ -147,14 +230,15 @@ export default {
       // Create item object with embeddings
       const item = {
         id: itemId,
-        title: body.title,
-        content: body.content,
-        category: body.category || 'General',
+        github_description,
+        github_repository_name,
+        homepage_url,
+        url: body.url,
+        is_template,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        expiresAt, // Always included now
-        titleEmbeddings: titleEmbedding.embeddings,
-        contentEmbeddings: contentEmbedding.embeddings,
+        descriptionEmbeddings: descriptionEmbedding.embeddings,
+        repositoryEmbeddings: repositoryEmbedding.embeddings,
         combinedEmbeddings: combinedEmbedding.embeddings,
       }
 
@@ -162,37 +246,36 @@ export default {
       // Convert embeddings arrays to strings for storage
       const itemData = {
         id: itemId,
-        title: body.title,
-        content: body.content,
-        category: body.category || 'General',
+        github_description,
+        github_repository_name,
+        homepage_url,
+        url: body.url,
+        is_template: is_template.toString(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        expiresAt,
-        titleEmbeddings: JSON.stringify(titleEmbedding.embeddings),
-        contentEmbeddings: JSON.stringify(contentEmbedding.embeddings),
+        descriptionEmbeddings: JSON.stringify(descriptionEmbedding.embeddings),
+        repositoryEmbeddings: JSON.stringify(repositoryEmbedding.embeddings),
         combinedEmbeddings: JSON.stringify(combinedEmbedding.embeddings),
       }
 
       // Use HSET to store the item data
       await redis.hset(itemId, itemData)
 
-      // Set expiration (always required now)
-      await redis.expire(itemId, ttlSeconds)
-
       // Close Redis connection
       redis.close()
 
       const response: AddItemResponse = {
         success: true,
-        message: `Item added successfully to Redis database with ${ttlSeconds}s expiration.`,
+        message: 'GitHub repository item added successfully to Redis database.',
         item: {
           id: itemId,
-          title: item.title,
-          content: item.content,
-          category: item.category,
+          github_description: item.github_description,
+          github_repository_name: item.github_repository_name,
+          homepage_url: item.homepage_url,
+          url: item.url,
+          is_template: item.is_template,
           createdAt: item.createdAt,
           updatedAt: item.updatedAt,
-          expiresAt: item.expiresAt, // Always included now
         },
         timestamp: new Date().toISOString(),
       }

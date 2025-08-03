@@ -4,6 +4,7 @@ import getItemFunction from './functions/get-item.ts'
 import deleteItemFunction from './functions/delete-item.ts'
 import searchItemsFunction from './functions/search-items.ts'
 import initIndexFunction from './functions/init-index.ts'
+import listItemsByUrlFunction from './functions/list-items-by-url.ts'
 
 // Function registry - add new functions here
 const functions = {
@@ -12,6 +13,7 @@ const functions = {
   'delete-item': deleteItemFunction,
   'search-items': searchItemsFunction,
   'init-index': initIndexFunction,
+  'list-items-by-url': listItemsByUrlFunction,
 }
 
 export default {
@@ -22,7 +24,7 @@ export default {
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     }
 
     // Handle preflight requests

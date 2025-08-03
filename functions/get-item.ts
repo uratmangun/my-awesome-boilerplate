@@ -1,5 +1,6 @@
 // Deno function to get a specific item from Redis database
 import { connect } from 'https://deno.land/x/redis@v0.32.3/mod.ts'
+import { validateClerkAuth, createUnauthorizedResponse, createServerErrorResponse } from '../utils/auth.ts'
 
 interface GetItemRequest {
   id: string
@@ -10,9 +11,10 @@ interface GetItemResponse {
   message: string
   item?: {
     id: string
-    title: string
-    content: string
-    category: string
+    github_description: string
+    github_repository_name: string
+    homepage_url: string
+    url: string
     createdAt: string
     updatedAt: string
   }
@@ -21,11 +23,18 @@ interface GetItemResponse {
 
 export default {
   async fetch(request: Request): Promise<Response> {
-    // Handle CORS for development
+    // Handle CORS for development with Authorization support
+    const origin = request.headers.get('Origin') || ''
+    const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000', 'https://your-production-domain.com']
+    const corsOrigin = allowedOrigins.includes(origin) ? origin : 'http://localhost:5173'
+    
     const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': corsOrigin,
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Accept, Accept-Language, Content-Language, Content-Type, Authorization, authorization, X-Requested-With, Origin, Access-Control-Request-Method, Access-Control-Request-Headers',
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Max-Age': '86400',
+      'Vary': 'Origin',
     }
 
     // Handle preflight requests
@@ -51,6 +60,15 @@ export default {
             ...corsHeaders,
           },
         }
+      )
+    }
+
+    // Validate authentication
+    const authResult = await validateClerkAuth(request)
+    if (!authResult.success) {
+      return createUnauthorizedResponse(
+        authResult.error || 'Authentication required',
+        corsHeaders
       )
     }
 
@@ -148,14 +166,13 @@ export default {
 
       const response: GetItemResponse = {
         success: true,
-        message: 'Item retrieved successfully.',
+        message: 'GitHub repository item retrieved successfully.',
         item: {
           id: (itemData.id || itemData['id'] || itemId) as string,
-          title: (itemData.title || itemData['title'] || '') as string,
-          content: (itemData.content || itemData['content'] || '') as string,
-          category: (itemData.category ||
-            itemData['category'] ||
-            'General') as string,
+          github_description: (itemData.github_description || itemData['github_description'] || '') as string,
+          github_repository_name: (itemData.github_repository_name || itemData['github_repository_name'] || '') as string,
+          homepage_url: (itemData.homepage_url || itemData['homepage_url'] || '') as string,
+          url: (itemData.url || itemData['url'] || '') as string,
           createdAt: (itemData.createdAt ||
             itemData['createdAt'] ||
             '') as string,

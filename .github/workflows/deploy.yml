@@ -131,6 +131,8 @@ jobs:
           # Privy Authentication Configuration
           VITE_PRIVY_APP_ID: ${{ secrets.VITE_PRIVY_APP_ID }}
           VITE_PRIVY_CLIENT_ID: ${{ secrets.VITE_PRIVY_CLIENT_ID }}
+          # Clerk Authentication Configuration
+          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
 
       - name: Set project name from repository
         id: project_name
@@ -190,12 +192,16 @@ jobs:
                   \"env_vars\": {
                     \"VITE_DENO_API_URL\": {
                       \"value\": \"${DENO_URL}\"
+                    },
+                    \"VITE_CLERK_PUBLISHABLE_KEY\": {
+                      \"value\": \"${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}\"
                     }
                   }
                 }
               }
             }"
 
+          echo "Environment variable VITE_DENO_API_URL and VITE_CLERK_PUBLISHABLE_KEY set successfully"
           echo "Environment variable VITE_DENO_API_URL set successfully"
 
       - name: Update repository website URL

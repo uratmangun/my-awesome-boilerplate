@@ -1,5 +1,6 @@
 // Deno function to delete a specific item from Redis database
 import { connect } from 'https://deno.land/x/redis@v0.32.3/mod.ts'
+import { validateClerkAuth, createUnauthorizedResponse, createServerErrorResponse } from '../utils/auth.ts'
 
 interface DeleteItemRequest {
   id: string
@@ -10,26 +11,36 @@ interface DeleteItemResponse {
   message: string
   deletedItem?: {
     id: string
-    title: string
-    content: string
-    category: string
+    github_description: string
+    github_repository_name: string
+    homepage_url: string
+    url: string
   }
   timestamp: string
 }
 
 export default {
   async fetch(request: Request): Promise<Response> {
-    // Handle CORS for development
+    // Enhanced CORS handler with Authorization support
+    const origin = request.headers.get('Origin') || ''
+    const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000', 'https://your-production-domain.com']
+    const corsOrigin = allowedOrigins.includes(origin) ? origin : 'http://localhost:5173'
+    
     const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'DELETE, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Origin': corsOrigin,
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, HEAD',
+      'Access-Control-Allow-Headers': 'Accept, Accept-Language, Content-Language, Content-Type, Authorization, authorization, X-Requested-With, Origin, Access-Control-Request-Method, Access-Control-Request-Headers',
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Max-Age': '86400',
+      'Vary': 'Origin',
     }
 
-    // Handle preflight requests
+    // Handle preflight requests (OPTIONS)
     if (request.method === 'OPTIONS') {
+      console.log('Handling CORS preflight request')
+      console.log('Request headers:', Object.fromEntries(request.headers.entries()))
       return new Response(null, {
-        status: 200,
+        status: 204,
         headers: corsHeaders,
       })
     }
@@ -49,6 +60,15 @@ export default {
             ...corsHeaders,
           },
         }
+      )
+    }
+
+    // Validate authentication
+    const authResult = await validateClerkAuth(request)
+    if (!authResult.success) {
+      return createUnauthorizedResponse(
+        authResult.error || 'Authentication required',
+        corsHeaders
       )
     }
 
@@ -144,9 +164,10 @@ export default {
       // Store the item data before deletion
       const deletedItem = {
         id: itemId,
-        title: itemData.title || '',
-        content: itemData.content || '',
-        category: itemData.category || '',
+        github_description: itemData.github_description || '',
+        github_repository_name: itemData.github_repository_name || '',
+        homepage_url: itemData.homepage_url || '',
+        url: itemData.url || '',
       }
 
       // Delete the item from Redis hash
@@ -172,15 +193,10 @@ export default {
 
       // Also remove from search indexes if they exist
       try {
-        // Remove from title index
-        await redis.srem('search:titles', itemId)
-        // Remove from content index
-        await redis.srem('search:contents', itemId)
-        // Remove from category index
-        await redis.srem(
-          `search:category:${deletedItem.category.toLowerCase()}`,
-          itemId
-        )
+        // Remove from description index
+        await redis.srem('search:descriptions', itemId)
+        // Remove from repository index
+        await redis.srem('search:repositories', itemId)
       } catch (indexError) {
         // Index cleanup errors are not critical
         console.warn('Warning: Could not clean up search indexes:', indexError)
@@ -190,7 +206,7 @@ export default {
 
       const response: DeleteItemResponse = {
         success: true,
-        message: `Item '${deletedItem.title}' deleted successfully`,
+        message: `GitHub repository '${deletedItem.github_repository_name}' deleted successfully`,
         deletedItem,
         timestamp: new Date().toISOString(),
       }
