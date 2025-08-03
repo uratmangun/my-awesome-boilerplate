@@ -22,7 +22,7 @@ async function loadEnvVariables() {
         const uncommented = trimmedLine.substring(1).trim()
         if (uncommented.includes('=')) {
           const [key, ...valueParts] = uncommented.split('=')
-          const value = valueParts.join('=').trim()
+          const _value = valueParts.join('=').trim()
           console.log(`   🔒 Commented variable found: ${key.trim()} (not loaded)`)
           continue // Don't load commented variables
         }

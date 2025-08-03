@@ -9,10 +9,27 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Github, Trash2, Copy } from 'lucide-react'
-import { SignInButton, SignedIn, SignedOut, UserButton, useUser, useAuth } from '@clerk/clerk-react'
+import {
+  SignInButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+  useUser,
+  useAuth,
+} from '@clerk/clerk-react'
 import { useState, useEffect } from 'react'
 import { toast } from 'sonner'
 import { API_ENDPOINTS } from '@/constants/api'
+
+// Interface for repository data
+interface Repository {
+  id: string
+  github_repository_name: string
+  github_description?: string
+  homepage_url?: string
+  is_template?: boolean
+  createdAt: string | number | Date
+}
 
 export function HomePage() {
   const { user } = useUser()
@@ -23,11 +40,11 @@ export function HomePage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submissionMessage, setSubmissionMessage] = useState('')
   const [submissionError, setSubmissionError] = useState('')
-  const [repositories, setRepositories] = useState([])
+  const [repositories, setRepositories] = useState<Repository[]>([])
   const [isLoadingRepos, setIsLoadingRepos] = useState(true)
   const [repoError, setRepoError] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
-  const [searchResults, setSearchResults] = useState([])
+  const [searchResults, setSearchResults] = useState<Repository[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [isSearchMode, setIsSearchMode] = useState(false)
 
@@ -36,7 +53,7 @@ export function HomePage() {
     try {
       setIsLoadingRepos(true)
       setRepoError('')
-      
+
       const response = await fetch(API_ENDPOINTS.LIST_ITEMS_BY_URL, {
         method: 'POST',
         headers: {
@@ -44,10 +61,10 @@ export function HomePage() {
         },
         body: JSON.stringify({
           url: window.location.hostname,
-          limit: 50
+          limit: 50,
         }),
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         setRepositories(data.results?.items || [])
@@ -85,19 +102,21 @@ export function HomePage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionToken}`,
+          Authorization: `Bearer ${sessionToken}`,
         },
         body: JSON.stringify({ id: repoId }),
       })
-      
+
       if (response.ok) {
         // Remove the deleted repo from the local state
-        setRepositories(repositories.filter((repo: Record<string, unknown>) => repo.id !== repoId))
+        setRepositories(
+          repositories.filter((repo: Repository) => repo.id !== repoId)
+        )
         toast.success('Repository deleted successfully!', {
           duration: 3000,
         })
       } else {
-        const errorData = await response.json() as Record<string, unknown>
+        const errorData = (await response.json()) as Record<string, unknown>
         console.error('Failed to delete repository:', errorData)
         toast.error('Failed to delete repository', {
           description: (errorData.message as string) || 'Please try again.',
@@ -123,7 +142,7 @@ export function HomePage() {
 
     try {
       setIsSearching(true)
-      
+
       // Get the session token for authentication
       const sessionToken = await getToken()
       if (!sessionToken) {
@@ -134,20 +153,20 @@ export function HomePage() {
         setIsSearching(false)
         return
       }
-      
+
       const response = await fetch(API_ENDPOINTS.SEARCH_ITEMS, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionToken}`,
+          Authorization: `Bearer ${sessionToken}`,
         },
         body: JSON.stringify({
           query: searchQuery,
           limit: 20,
-          searchType: 'combined'
+          searchType: 'combined',
         }),
       })
-      
+
       if (response.ok) {
         const data = await response.json()
         setSearchResults(data.results?.items || [])
@@ -187,18 +206,17 @@ export function HomePage() {
     try {
       // Use GitHub CLI to create repo from template
       const ghCommand = `gh repo create ${newRepoName} --template ${repoName} --public --clone`
-      
+
       // Copy the command to clipboard for user to run
       await navigator.clipboard.writeText(ghCommand)
-      
+
       toast.success('GitHub CLI command copied!', {
         description: `Run the copied command in your terminal to create "${newRepoName}" from this template.`,
         duration: 5000,
       })
-      
+
       // Also show the command in console for reference
       console.log('GitHub CLI command:', ghCommand)
-      
     } catch (error) {
       console.error('Failed to prepare GitHub CLI command:', error)
       toast.error('Failed to prepare command', {
@@ -221,7 +239,7 @@ export function HomePage() {
           <UserButton />
         </SignedIn>
       </div>
-      
+
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-16 text-gray-900 dark:text-gray-100">
           <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -230,12 +248,12 @@ export function HomePage() {
           <p className="text-xl text-muted-foreground dark:text-gray-300 max-w-2xl mx-auto mb-10">
             A modern, flexible template for building amazing web applications
           </p>
-          
+
           <div className="flex justify-center">
             <Button variant="outline" size="lg" asChild>
-              <a 
-                href="https://github.com/uratmangun/my-awesome-boilerplate" 
-                target="_blank" 
+              <a
+                href="https://github.com/uratmangun/my-awesome-boilerplate"
+                target="_blank"
                 rel="noopener noreferrer"
               >
                 View on GitHub
@@ -244,20 +262,20 @@ export function HomePage() {
           </div>
 
           <div className="max-w-md mx-auto mt-8 flex gap-2 items-center">
-            <Input 
-              type="search" 
-              placeholder="Search repositories..." 
+            <Input
+              type="search"
+              placeholder="Search repositories..."
               className="flex-1 h-11"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
+              onChange={e => setSearchQuery(e.target.value)}
+              onKeyDown={e => {
                 if (e.key === 'Enter') {
                   searchRepositories()
                 }
               }}
             />
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="h-11"
               onClick={searchRepositories}
               disabled={isSearching}
@@ -265,9 +283,9 @@ export function HomePage() {
               {isSearching ? 'Searching...' : 'Search'}
             </Button>
             {isSearchMode && (
-              <Button 
-                variant="outline" 
-                size="lg" 
+              <Button
+                variant="outline"
+                size="lg"
                 className="h-11"
                 onClick={clearSearch}
               >
@@ -277,9 +295,9 @@ export function HomePage() {
           </div>
           {isAuthorizedUser && (
             <div className="max-w-md mx-auto mt-4">
-              <Button 
-                variant="default" 
-                size="lg" 
+              <Button
+                variant="default"
+                size="lg"
                 className="w-full"
                 onClick={() => setIsModalOpen(true)}
               >
@@ -296,9 +314,11 @@ export function HomePage() {
         {/* Repository List Section */}
         <div className="max-w-6xl mx-auto mb-16">
           <h2 className="text-3xl font-bold text-center mb-8 text-gray-900 dark:text-gray-100">
-            {isSearchMode ? `Search Results (${searchResults.length})` : 'Added Repositories'}
+            {isSearchMode
+              ? `Search Results (${searchResults.length})`
+              : 'Added Repositories'}
           </h2>
-          
+
           {isSearching ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">Searching repositories...</p>
@@ -313,109 +333,121 @@ export function HomePage() {
             </div>
           ) : isSearchMode && searchResults.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">No repositories found matching your search. Try different keywords!</p>
+              <p className="text-muted-foreground">
+                No repositories found matching your search. Try different
+                keywords!
+              </p>
             </div>
           ) : !isSearchMode && repositories.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-muted-foreground">No repositories added yet. Add your first repository above!</p>
+              <p className="text-muted-foreground">
+                No repositories added yet. Add your first repository above!
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {(isSearchMode ? searchResults : repositories).map((repo: Record<string, unknown>) => (
-                <Card key={repo.id} className="p-6 hover:shadow-lg transition-shadow">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-lg flex items-center gap-2 text-blue-600 dark:text-blue-300">
-                      <Github className="h-5 w-5" />
-                      {repo.github_repository_name}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="pb-3">
-                    <CardDescription className="text-sm text-muted-foreground mb-3">
-                      {repo.github_description || 'No description available'}
-                    </CardDescription>
-                    <div className="text-xs text-muted-foreground">
-                      <p>Added: {new Date(repo.createdAt).toLocaleDateString()}</p>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="pt-3 flex flex-col gap-2">
-                    {/* Template Creation Section - Only show for template repositories */}
-                    {repo.is_template && (
-                      <div className="mb-2 p-3 bg-blue-50 dark:bg-blue-950 rounded-md border border-blue-200 dark:border-blue-800">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-1">
-                              📋 Template Repository
-                            </p>
-                            <p className="text-xs text-blue-600 dark:text-blue-300">
-                              Create a new repo based on this template
-                            </p>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => createFromTemplate(repo.github_repository_name)}
-                            className="ml-2 text-blue-600 hover:text-blue-700 hover:bg-blue-100 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900"
-                            title="Create repository from template using GitHub CLI"
-                          >
-                            <Copy className="h-4 w-4" />
-                          </Button>
-                        </div>
+              {(isSearchMode ? searchResults : repositories).map(
+                (repo: Repository) => (
+                  <Card
+                    key={repo.id}
+                    className="p-6 hover:shadow-lg transition-shadow"
+                  >
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-lg flex items-center gap-2 text-blue-600 dark:text-blue-300">
+                        <Github className="h-5 w-5" />
+                        {repo.github_repository_name}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pb-3">
+                      <CardDescription className="text-sm text-muted-foreground mb-3">
+                        {repo.github_description || 'No description available'}
+                      </CardDescription>
+                      <div className="text-xs text-muted-foreground">
+                        <p>
+                          Added: {new Date(repo.createdAt).toLocaleDateString()}
+                        </p>
                       </div>
-                    )}
-                    <div className="flex gap-2 w-full">
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        asChild
-                        className="flex-1"
-                      >
-                        <a 
-                          href={`https://github.com/${repo.github_repository_name}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <Github className="h-4 w-4 mr-1" />
-                          View Repo
-                        </a>
-                      </Button>
-                      {repo.homepage_url && (
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
+                    </CardContent>
+                    <CardFooter className="pt-3 flex flex-col gap-2">
+                      {/* Template Creation Section - Only show for template repositories */}
+                      {repo.is_template && (
+                        <div className="mb-2 p-3 bg-blue-50 dark:bg-blue-950 rounded-md border border-blue-200 dark:border-blue-800">
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-blue-800 dark:text-blue-200 mb-1">
+                                📋 Template Repository
+                              </p>
+                              <p className="text-xs text-blue-600 dark:text-blue-300">
+                                Create a new repo based on this template
+                              </p>
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                createFromTemplate(repo.github_repository_name)
+                              }
+                              className="ml-2 text-blue-600 hover:text-blue-700 hover:bg-blue-100 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900"
+                              title="Create repository from template using GitHub CLI"
+                            >
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                      <div className="flex gap-2 w-full">
+                        <Button
+                          variant="outline"
+                          size="sm"
                           asChild
                           className="flex-1"
                         >
-                          <a 
-                            href={repo.homepage_url}
+                          <a
+                            href={`https://github.com/${repo.github_repository_name}`}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
-                            🌐 Homepage
+                            <Github className="h-4 w-4 mr-1" />
+                            View Repo
                           </a>
                         </Button>
+                        {repo.homepage_url && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            className="flex-1"
+                          >
+                            <a
+                              href={repo.homepage_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              🌐 Homepage
+                            </a>
+                          </Button>
+                        )}
+                      </div>
+                      {isAuthorizedUser && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => deleteRepository(repo.id)}
+                          className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Delete Repository
+                        </Button>
                       )}
-                    </div>
-                    {isAuthorizedUser && (
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => deleteRepository(repo.id)}
-                        className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950"
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Delete Repository
-                      </Button>
-                    )}
-                  </CardFooter>
-                </Card>
-              ))}
+                    </CardFooter>
+                  </Card>
+                )
+              )}
             </div>
           )}
         </div>
-
-
       </div>
-      
+
       {/* Add Project Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50">
@@ -431,50 +463,47 @@ export function HomePage() {
                 {submissionError}
               </div>
             )}
-            <Input 
-              type="text" 
-              placeholder="https://github.com/username/repo" 
+            <Input
+              type="text"
+              placeholder="https://github.com/username/repo"
               value={githubRepo}
-              onChange={(e) => setGithubRepo(e.target.value)}
+              onChange={e => setGithubRepo(e.target.value)}
               className="mb-4"
             />
             <div className="flex justify-end gap-2">
-              <Button 
-                variant="outline" 
-                onClick={() => setIsModalOpen(false)}
-              >
+              <Button variant="outline" onClick={() => setIsModalOpen(false)}>
                 Cancel
               </Button>
-              <Button 
+              <Button
                 onClick={async () => {
                   // Submit the GitHub repo URL to the backend
                   setIsSubmitting(true)
                   setSubmissionMessage('')
                   setSubmissionError('')
-                  
+
                   try {
                     // Temporarily remove auth for CORS testing
                     const sessionToken = await getToken()
                     if (!sessionToken) {
-                      setSubmissionError('Authentication required. Please sign in.')
+                      setSubmissionError(
+                        'Authentication required. Please sign in.'
+                      )
                       setIsSubmitting(false)
                       return
                     }
-
-
 
                     const response = await fetch(API_ENDPOINTS.ADD_ITEM, {
                       method: 'POST',
                       headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${sessionToken}`,
+                        Authorization: `Bearer ${sessionToken}`,
                       },
                       body: JSON.stringify({
                         github_repository_url: githubRepo,
                         url: window.location.hostname,
                       }),
                     })
-                    
+
                     if (response.ok) {
                       setSubmissionMessage('Repository added successfully!')
                       console.log('Repository added successfully')
@@ -486,12 +515,20 @@ export function HomePage() {
                         setGithubRepo('')
                       }, 1500)
                     } else {
-                      const errorData = await response.json() as Record<string, unknown>
-                      setSubmissionError((errorData.message as string) || 'Failed to add repository')
+                      const errorData = (await response.json()) as Record<
+                        string,
+                        unknown
+                      >
+                      setSubmissionError(
+                        (errorData.message as string) ||
+                          'Failed to add repository'
+                      )
                       console.error('Failed to add repository:', errorData)
                     }
                   } catch (error) {
-                    setSubmissionError('Error submitting repository. Please try again.')
+                    setSubmissionError(
+                      'Error submitting repository. Please try again.'
+                    )
                     console.error('Error submitting repository:', error)
                   } finally {
                     setIsSubmitting(false)

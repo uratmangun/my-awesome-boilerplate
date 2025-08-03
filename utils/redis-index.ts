@@ -27,7 +27,7 @@ export async function createItemsIndex(
     try {
       await redis.sendCommand('FT.DROPINDEX', ITEMS_INDEX_KEY)
       console.log(`Dropped existing index: ${ITEMS_INDEX_KEY}`)
-    } catch (error) {
+    } catch (_error) {
       // Index doesn't exist, which is fine
       console.log(`No existing index to drop: ${ITEMS_INDEX_KEY}`)
     }
@@ -107,7 +107,7 @@ export async function checkIndexExists(
     await redis.call('FT.INFO', ITEMS_INDEX_KEY)
     redis.close()
     return true
-  } catch (error) {
+  } catch (_error) {
     redis.close()
     return false
   }
@@ -116,7 +116,7 @@ export async function checkIndexExists(
 /**
  * Get index information
  */
-export async function getIndexInfo(config: RedisIndexConfig): Promise<any> {
+export async function getIndexInfo(config: RedisIndexConfig): Promise<unknown> {
   const redis = await connect({
     hostname: new URL(config.redisUrl).hostname,
     port: parseInt(new URL(config.redisUrl).port) || 6379,

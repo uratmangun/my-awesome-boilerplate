@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+/* eslint-disable react-refresh/only-export-components */
+import React, { createContext, useEffect, useState } from 'react'
 
 export type Theme = 'dark' | 'light' | 'system'
 
@@ -12,7 +13,8 @@ const initialState: ThemeProviderState = {
   setTheme: () => null,
 }
 
-export const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
+export const ThemeProviderContext =
+  createContext<ThemeProviderState>(initialState)
 
 type ThemeProviderProps = {
   children: React.ReactNode
@@ -85,5 +87,3 @@ export function ThemeProvider({
     </ThemeProviderContext.Provider>
   )
 }
-
-
