@@ -35,15 +35,19 @@ export default {
     const corsHeaders = {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, HEAD',
-      'Access-Control-Allow-Headers': 'Accept, Accept-Language, Content-Language, Content-Type, Authorization, authorization, X-Requested-With, Origin, Access-Control-Request-Method, Access-Control-Request-Headers',
+      'Access-Control-Allow-Headers':
+        'Accept, Accept-Language, Content-Language, Content-Type, Authorization, authorization, X-Requested-With, Origin, Access-Control-Request-Method, Access-Control-Request-Headers',
       'Access-Control-Max-Age': '86400',
-      'Vary': 'Origin',
+      Vary: 'Origin',
     }
 
     // Handle preflight requests (OPTIONS)
     if (request.method === 'OPTIONS') {
       console.log('Handling CORS preflight request')
-      console.log('Request headers:', Object.fromEntries(request.headers.entries()))
+      console.log(
+        'Request headers:',
+        Object.fromEntries(request.headers.entries())
+      )
       return new Response(null, {
         status: 204,
         headers: corsHeaders,

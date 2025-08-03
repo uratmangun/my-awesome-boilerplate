@@ -30,7 +30,7 @@ export default {
     // const origin = request.headers.get('Origin') || ''
     // const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000', 'https://your-production-domain.com']
     // const corsOrigin = allowedOrigins.includes(origin) ? origin : 'http://localhost:5173'
-    
+
     // const corsHeaders = {
     //   'Access-Control-Allow-Origin': corsOrigin,
     //   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, HEAD',
@@ -39,7 +39,7 @@ export default {
     //   'Vary': 'Origin',
     // }
     // // Log request details
-   
+
     // // Handle preflight requests (OPTIONS)
     // if (request.method === 'OPTIONS') {
     // Log ALL request details
@@ -133,12 +133,15 @@ export default {
       })
 
       // Parse GitHub repository URL to extract owner and repo name
-      const githubUrlMatch = body.github_repository_url.match(/github\.com\/([^/]+)\/([^/]+)(?:\.git)?(?:\/.*)?$/)
+      const githubUrlMatch = body.github_repository_url.match(
+        /github\.com\/([^/]+)\/([^/]+)(?:\.git)?(?:\/.*)?$/
+      )
       if (!githubUrlMatch) {
         return new Response(
           JSON.stringify({
             success: false,
-            message: 'Invalid GitHub repository URL format. Expected: https://github.com/owner/repo',
+            message:
+              'Invalid GitHub repository URL format. Expected: https://github.com/owner/repo',
             timestamp: new Date().toISOString(),
           }),
           {
@@ -156,7 +159,9 @@ export default {
       // Fetch repository information from GitHub API
       let repoData: Record<string, unknown>
       try {
-        const githubResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}`)
+        const githubResponse = await fetch(
+          `https://api.github.com/repos/${owner}/${repo}`
+        )
         if (!githubResponse.ok) {
           return new Response(
             JSON.stringify({
@@ -193,7 +198,8 @@ export default {
 
       // Extract repository information
       const github_repository_name = repoData.full_name || `${owner}/${repo}`
-      const github_description = repoData.description || 'No description available'
+      const github_description =
+        repoData.description || 'No description available'
       const homepage_url = repoData.homepage || ''
       const is_template = repoData.is_template || false
 
@@ -201,8 +207,11 @@ export default {
       const itemId = `item:${Date.now()}:${Math.random().toString(36).substr(2, 9)}`
 
       // Generate vector embeddings for github_description and github_repository_name
-      const descriptionEmbedding = await generateTextEmbeddings(github_description)
-      const repositoryEmbedding = await generateTextEmbeddings(github_repository_name)
+      const descriptionEmbedding =
+        await generateTextEmbeddings(github_description)
+      const repositoryEmbedding = await generateTextEmbeddings(
+        github_repository_name
+      )
       const combinedText = `${github_description} ${github_repository_name}`
       const combinedEmbedding = await generateTextEmbeddings(combinedText)
 

@@ -25,16 +25,23 @@ export default {
   async fetch(request: Request): Promise<Response> {
     // Handle CORS for development with Authorization support
     const origin = request.headers.get('Origin') || ''
-    const allowedOrigins = ['http://localhost:5173', 'http://localhost:3000', 'https://your-production-domain.com']
-    const corsOrigin = allowedOrigins.includes(origin) ? origin : 'http://localhost:5173'
-    
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'https://your-production-domain.com',
+    ]
+    const corsOrigin = allowedOrigins.includes(origin)
+      ? origin
+      : 'http://localhost:5173'
+
     const corsHeaders = {
       'Access-Control-Allow-Origin': corsOrigin,
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Accept, Accept-Language, Content-Language, Content-Type, Authorization, authorization, X-Requested-With, Origin, Access-Control-Request-Method, Access-Control-Request-Headers',
+      'Access-Control-Allow-Headers':
+        'Accept, Accept-Language, Content-Language, Content-Type, Authorization, authorization, X-Requested-With, Origin, Access-Control-Request-Method, Access-Control-Request-Headers',
       'Access-Control-Allow-Credentials': 'true',
       'Access-Control-Max-Age': '86400',
-      'Vary': 'Origin',
+      Vary: 'Origin',
     }
 
     // Handle preflight requests
@@ -169,9 +176,15 @@ export default {
         message: 'GitHub repository item retrieved successfully.',
         item: {
           id: (itemData.id || itemData['id'] || itemId) as string,
-          github_description: (itemData.github_description || itemData['github_description'] || '') as string,
-          github_repository_name: (itemData.github_repository_name || itemData['github_repository_name'] || '') as string,
-          homepage_url: (itemData.homepage_url || itemData['homepage_url'] || '') as string,
+          github_description: (itemData.github_description ||
+            itemData['github_description'] ||
+            '') as string,
+          github_repository_name: (itemData.github_repository_name ||
+            itemData['github_repository_name'] ||
+            '') as string,
+          homepage_url: (itemData.homepage_url ||
+            itemData['homepage_url'] ||
+            '') as string,
           url: (itemData.url || itemData['url'] || '') as string,
           createdAt: (itemData.createdAt ||
             itemData['createdAt'] ||
