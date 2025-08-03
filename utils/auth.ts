@@ -31,7 +31,7 @@ export async function validateClerkAuth(request: Request): Promise<AuthResult> {
     const sessionToken = authHeader.substring(7) // Remove 'Bearer ' prefix
 
     // Get Clerk secret key from environment
-    const clerkSecretKey = (globalThis as unknown as { Deno?: { env?: { get: (key: string) => string | undefined } } }).Deno?.env?.get('CLERK_SECRET_KEY')
+    const clerkSecretKey = (globalThis as any).Deno?.env?.get('CLERK_SECRET_KEY')
     if (!clerkSecretKey) {
       return {
         success: false,
