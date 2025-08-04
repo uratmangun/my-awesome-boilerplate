@@ -35,6 +35,7 @@ interface SearchItem {
   content: string
   category: string
   relevanceScore: number
+  is_template?: boolean
 }
 
 interface AISearchPageProps {
@@ -88,16 +89,18 @@ export function AISearchPage({ onBack }: AISearchPageProps) {
         const mappedResults: SearchItem[] = result.results.items.map(
           (item: {
             id: string
-            title: string
-            content: string
+            github_description: string
+            github_repository_name: string
             category: string
             score?: number
+            is_template?: boolean
           }) => ({
             id: item.id,
-            title: item.title,
-            content: item.content,
+            title: item.github_repository_name,
+            content: item.github_description,
             category: item.category,
             relevanceScore: item.score || 0,
+            is_template: item.is_template,
           })
         )
         setSearchResults(mappedResults)

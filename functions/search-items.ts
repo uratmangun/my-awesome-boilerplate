@@ -257,6 +257,7 @@ export default {
             github_repository_name: itemData.github_repository_name || '',
             homepage_url: itemData.homepage_url || '',
             category: itemData.category || 'my awesome boilerplate',
+            is_template: itemData.is_template === 'true',
             createdAt: itemData.createdAt || '',
             updatedAt: itemData.updatedAt || '',
             score: similarity,
