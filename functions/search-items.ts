@@ -1,7 +1,6 @@
 // Deno function to search items using vector similarity (cosine similarity)
 import { connect } from 'https://deno.land/x/redis@v0.32.3/mod.ts'
 import { generateTextEmbeddings } from '../utils/text-embeddings.ts'
-import { validateClerkAuth, createUnauthorizedResponse } from '../utils/auth.ts'
 
 interface SearchItemsRequest {
   query: string
@@ -69,15 +68,6 @@ export default {
             ...corsHeaders,
           },
         }
-      )
-    }
-
-    // Validate authentication
-    const authResult = await validateClerkAuth(request)
-    if (!authResult.success) {
-      return createUnauthorizedResponse(
-        authResult.error || 'Authentication required',
-        corsHeaders
       )
     }
 
