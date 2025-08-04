@@ -164,22 +164,10 @@ export function HomePage() {
     try {
       setIsSearching(true)
 
-      // Get the session token for authentication
-      const sessionToken = await getToken()
-      if (!sessionToken) {
-        toast.error('Authentication required', {
-          description: 'Please sign in to search repositories.',
-          duration: 3000,
-        })
-        setIsSearching(false)
-        return
-      }
-
       const response = await fetch(API_ENDPOINTS.SEARCH_ITEMS, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${sessionToken}`,
         },
         body: JSON.stringify({
           query: searchQuery,
