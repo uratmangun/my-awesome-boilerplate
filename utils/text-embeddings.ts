@@ -1,6 +1,5 @@
-// Text embedding generation utility using Google GenAI
+// Text embedding generation utility using Nomic embeddings
 // Based on the Redis vector similarity search guide
-import { GoogleGenAI } from 'npm:@google/genai'
 interface EmbeddingResponse {
   embeddings: number[]
   error?: string
@@ -21,54 +20,68 @@ export async function generateTextEmbeddings(
     }
   } catch (error) {
     console.error('Error generating embeddings:', error)
-    // Fallback to mock embeddings if Google AI fails
+    // Fallback to mock embeddings if Nomic API fails
     const mockEmbeddings = createMockEmbeddings(text)
     return {
       embeddings: mockEmbeddings,
-      error: `Google AI failed, using mock embeddings: ${error.message}`,
+      error: `Nomic API failed, using mock embeddings: ${error.message}`,
     }
   }
 }
 
 /**
- * Generate sentence embeddings using Google GenAI
- * Uses the gemini-embedding-001 model for high-quality embeddings
+ * Generate sentence embeddings using Nomic API
+ * Uses the nomic-embed-text-v1.5 model for high-quality embeddings
  */
 async function generateSentenceEmbeddings(sentence: string): Promise<number[]> {
   try {
     // Get API key from environment
-    const apiKey = Deno.env.get('GOOGLE_AI_API_KEY')
+    const apiKey = Deno.env.get('NOMIC_API_KEY')
     if (!apiKey) {
-      throw new Error('GOOGLE_AI_API_KEY environment variable is required')
+      throw new Error('NOMIC_API_KEY environment variable is required')
     }
 
-    // Initialize Google GenAI
-    const ai = new GoogleGenAI({ apiKey })
+    const url = "https://api-atlas.nomic.ai/v1/embedding/text"
+    
+    const body = {
+      texts: [sentence],
+      model: "nomic-embed-text-v1.5",
+      task_type: "search_document"
+    }
 
-    // Generate embeddings using the embedding model
-    const response = await ai.models.embedContent({
-      model: 'gemini-embedding-001',
-      contents: sentence,
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
     })
 
-    if (!response.embeddings || response.embeddings.length === 0) {
-      throw new Error('Failed to generate embeddings from Google GenAI')
+    if (!response.ok) {
+      throw new Error(`Nomic API request failed: ${response.status} ${response.statusText}`)
     }
 
-    return response.embeddings[0].values
+    const result = await response.json()
+    
+    if (!result.embeddings || result.embeddings.length === 0) {
+      throw new Error('Failed to generate embeddings from Nomic API')
+    }
+
+    return result.embeddings[0]
   } catch (error) {
-    console.error('Google GenAI embedding generation failed:', error)
-    throw new Error(`Google GenAI embedding failed: ${error.message}`)
+    console.error('Nomic embedding generation failed:', error)
+    throw new Error(`Nomic embedding failed: ${error.message}`)
   }
 }
 
 /**
  * Create mock embeddings based on text content
- * This creates a 768-dimensional vector to match Google's text-embedding-004
- * Used as fallback when Google AI API is unavailable
+ * This creates a 768-dimensional vector to match Nomic's embedding dimensions
+ * Used as fallback when Nomic API is unavailable
  */
 function createMockEmbeddings(text: string): number[] {
-  const dimension = 768 // Google text-embedding-004 produces 768-dimensional embeddings
+  const dimension = 768 // Nomic embeddings produce 768-dimensional embeddings
   const embeddings: number[] = []
 
   // Create a simple hash-based embedding

@@ -21,19 +21,8 @@ interface DeleteItemResponse {
 
 export default {
   async fetch(request: Request): Promise<Response> {
-    // Enhanced CORS handler with Authorization support
-    const origin = request.headers.get('Origin') || ''
-    const allowedOrigins = [
-      'http://localhost:5173',
-      'http://localhost:3000',
-      'https://your-production-domain.com',
-    ]
-    const corsOrigin = allowedOrigins.includes(origin)
-      ? origin
-      : 'http://localhost:5173'
-
     const corsHeaders = {
-      'Access-Control-Allow-Origin': corsOrigin,
+      'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, HEAD',
       'Access-Control-Allow-Headers':
         'Accept, Accept-Language, Content-Language, Content-Type, Authorization, authorization, X-Requested-With, Origin, Access-Control-Request-Method, Access-Control-Request-Headers',

@@ -53,6 +53,12 @@ export function HomePage() {
   const [isLoadingRepos, setIsLoadingRepos] = useState(true)
   const [repoError, setRepoError] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean
+    repoId: string
+    repoName: string
+  }>({ isOpen: false, repoId: '', repoName: '' })
+  const [isDeleting, setIsDeleting] = useState(false)
   const [searchResults, setSearchResults] = useState<Repository[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [isSearchMode, setIsSearchMode] = useState(false)
@@ -96,6 +102,8 @@ export function HomePage() {
   // Delete repository function
   const deleteRepository = async (repoId: string) => {
     try {
+      setIsDeleting(true)
+
       // Get the session token for authentication
       const sessionToken = await getToken()
       if (!sessionToken) {
@@ -117,13 +125,15 @@ export function HomePage() {
       })
 
       if (response.ok) {
-        // Remove the deleted repo from the local state
-        setRepositories(
-          repositories.filter((repo: Repository) => repo.id !== repoId)
-        )
         toast.success('Repository deleted successfully!', {
           duration: 3000,
         })
+
+        // Refresh the repository list
+        await fetchRepositories()
+
+        // Close the modal
+        setDeleteConfirmation({ isOpen: false, repoId: '', repoName: '' })
       } else {
         const errorData = (await response.json()) as Record<string, unknown>
         console.error('Failed to delete repository:', errorData)
@@ -138,6 +148,8 @@ export function HomePage() {
         description: 'Please try again later.',
         duration: 3000,
       })
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -364,7 +376,7 @@ export function HomePage() {
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
               {isSearchMode
-                ? `Search Results (${searchResults.length})`
+                ? `Search Results (${searchResults.filter(repo => repo.score > 0).length})`
                 : 'Repository Collection'}
             </h2>
             <p className="text-lg text-gray-600 dark:text-gray-300">
@@ -396,7 +408,8 @@ export function HomePage() {
                 <p className="text-red-600 dark:text-red-400">{repoError}</p>
               </div>
             </div>
-          ) : isSearchMode && searchResults.length === 0 ? (
+          ) : isSearchMode &&
+            searchResults.filter(repo => repo.score > 0).length === 0 ? (
             <div className="text-center py-16">
               <div className="max-w-md mx-auto p-8 bg-gray-50 dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700">
                 <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -422,76 +435,94 @@ export function HomePage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {(isSearchMode ? searchResults : repositories).map(
-                (repo: Repository, index) => (
-                  <Card
-                    key={repo.id}
-                    className="group hover:shadow-2xl transition-all duration-500 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg hover:scale-105 rounded-2xl overflow-hidden"
-                    style={{
-                      animationDelay: `${index * 100}ms`,
-                      animation: 'fadeInUp 0.6s ease-out forwards',
-                    }}
-                  >
-                    <CardHeader className="pb-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-sky-500 rounded-lg flex items-center justify-center">
-                            <Github className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                              {repo.github_repository_name.split('/')[1] ||
-                                repo.github_repository_name}
-                            </CardTitle>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              {repo.github_repository_name.split('/')[0]}
-                            </p>
-                          </div>
+              {(isSearchMode
+                ? searchResults.filter(repo => repo.score > 0)
+                : repositories
+              ).map((repo: Repository, index) => (
+                <Card
+                  key={repo.id}
+                  className="group hover:shadow-2xl transition-all duration-500 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-0 shadow-lg hover:scale-105 rounded-2xl overflow-hidden"
+                  style={{
+                    animationDelay: `${index * 100}ms`,
+                    animation: 'fadeInUp 0.6s ease-out forwards',
+                  }}
+                >
+                  <CardHeader className="pb-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-sky-500 rounded-lg flex items-center justify-center">
+                          <Github className="w-5 h-5 text-white" />
                         </div>
-                        {repo.is_template && (
-                          <div className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-xs rounded-full">
-                            Template
-                          </div>
-                        )}
+                        <div>
+                          <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            {repo.github_repository_name.split('/')[1] ||
+                              repo.github_repository_name}
+                          </CardTitle>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {repo.github_repository_name.split('/')[0]}
+                          </p>
+                        </div>
                       </div>
-                    </CardHeader>
-
-                    <CardContent className="pb-4">
-                      <CardDescription className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
-                        {repo.github_description || 'No description available'}
-                      </CardDescription>
-                      <div className="text-xs text-gray-500 dark:text-gray-400">
-                        Added {new Date(repo.createdAt).toLocaleDateString()}
-                      </div>
-                    </CardContent>
-
-                    <CardFooter className="pt-4 flex flex-col space-y-3">
                       {repo.is_template && (
-                        <div className="w-full p-3 bg-gradient-to-r from-blue-50 to-sky-50 dark:from-blue-900/20 dark:to-sky-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                                📋 Ready to Clone
-                              </p>
-                              <p className="text-xs text-blue-600 dark:text-blue-300">
-                                Create new project from template
-                              </p>
-                            </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                createFromTemplate(repo.github_repository_name)
-                              }
-                              className="border-blue-200 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30"
-                            >
-                              <Copy className="w-4 h-4" />
-                            </Button>
-                          </div>
+                        <div className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 text-xs rounded-full">
+                          Template
                         </div>
                       )}
+                    </div>
+                  </CardHeader>
 
-                      <div className="flex gap-2 w-full">
+                  <CardContent className="pb-4">
+                    <CardDescription className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
+                      {repo.github_description || 'No description available'}
+                    </CardDescription>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      Added {new Date(repo.createdAt).toLocaleDateString()}
+                    </div>
+                  </CardContent>
+
+                  <CardFooter className="pt-4 flex flex-col space-y-3">
+                    {repo.is_template && (
+                      <div className="w-full p-3 bg-gradient-to-r from-blue-50 to-sky-50 dark:from-blue-900/20 dark:to-sky-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                              📋 Ready to Clone
+                            </p>
+                            <p className="text-xs text-blue-600 dark:text-blue-300">
+                              Create new project from template
+                            </p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              createFromTemplate(repo.github_repository_name)
+                            }
+                            className="border-blue-200 dark:border-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex gap-2 w-full">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        asChild
+                        className="flex-1 rounded-lg"
+                      >
+                        <a
+                          href={`https://github.com/${repo.github_repository_name}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Github className="w-4 h-4 mr-2" />
+                          Repository
+                        </a>
+                      </Button>
+                      {repo.homepage_url && (
                         <Button
                           variant="outline"
                           size="sm"
@@ -499,48 +530,37 @@ export function HomePage() {
                           className="flex-1 rounded-lg"
                         >
                           <a
-                            href={`https://github.com/${repo.github_repository_name}`}
+                            href={repo.homepage_url}
                             target="_blank"
                             rel="noopener noreferrer"
                           >
-                            <Github className="w-4 h-4 mr-2" />
-                            Repository
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            Live Site
                           </a>
                         </Button>
-                        {repo.homepage_url && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            asChild
-                            className="flex-1 rounded-lg"
-                          >
-                            <a
-                              href={repo.homepage_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <ExternalLink className="w-4 h-4 mr-2" />
-                              Live Site
-                            </a>
-                          </Button>
-                        )}
-                      </div>
-
-                      {isAuthorizedUser && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => deleteRepository(repo.id)}
-                          className="w-full text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 border-red-200 dark:border-red-800 rounded-lg"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Remove Repository
-                        </Button>
                       )}
-                    </CardFooter>
-                  </Card>
-                )
-              )}
+                    </div>
+
+                    {isAuthorizedUser && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          setDeleteConfirmation({
+                            isOpen: true,
+                            repoId: repo.id,
+                            repoName: repo.name,
+                          })
+                        }
+                        className="w-full text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 border-red-200 dark:border-red-800 rounded-lg"
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Remove Repository
+                      </Button>
+                    )}
+                  </CardFooter>
+                </Card>
+              ))}
             </div>
           )}
         </div>
@@ -590,10 +610,7 @@ export function HomePage() {
       {/* Add Project Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={() => setIsModalOpen(false)}
-          ></div>
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
           <div className="relative bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl max-w-md w-full border border-gray-200 dark:border-gray-700">
             <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
               Add GitHub Repository
@@ -666,11 +683,9 @@ export function HomePage() {
                       console.log('Repository added successfully')
                       // Refresh the repository list to show the newly added repository
                       await fetchRepositories()
-                      // Close modal after successful submission
-                      setTimeout(() => {
-                        setIsModalOpen(false)
-                        setGithubRepo('')
-                      }, 1500)
+                      // Close modal immediately after successful submission and list refresh
+                      setIsModalOpen(false)
+                      setGithubRepo('')
                     } else {
                       const errorData = (await response.json()) as Record<
                         string,
@@ -701,6 +716,51 @@ export function HomePage() {
                   </div>
                 ) : (
                   'Add Repository'
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirmation.isOpen && (
+        <div className="fixed inset-0 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+              Confirm Deletion
+            </h3>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              Are you sure you want to remove{' '}
+              <strong>{deleteConfirmation.repoName}</strong>? This action cannot
+              be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button
+                variant="outline"
+                onClick={() =>
+                  setDeleteConfirmation({
+                    isOpen: false,
+                    repoId: '',
+                    repoName: '',
+                  })
+                }
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => deleteRepository(deleteConfirmation.repoId)}
+                disabled={isDeleting}
+                className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 border-red-200 dark:border-red-800"
+              >
+                {isDeleting ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600 mr-2"></div>
+                    Deleting...
+                  </div>
+                ) : (
+                  'Delete'
                 )}
               </Button>
             </div>

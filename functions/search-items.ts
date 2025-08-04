@@ -221,6 +221,11 @@ export default {
             itemData[itemDataArray[i]] = itemDataArray[i + 1]
           }
 
+          // Only search items with category "my awesome boilerplate"
+          if (itemData.category !== 'my awesome boilerplate') {
+            continue
+          }
+
           // Parse stored embeddings
           const storedEmbeddingsStr = itemData[embeddingField]
           if (!storedEmbeddingsStr) continue
