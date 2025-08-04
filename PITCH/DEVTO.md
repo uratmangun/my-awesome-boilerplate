@@ -1,108 +1,64 @@
-# Building AI-Powered Semantic Search with Redis Vector Similarity and Deno
+# Building an AI-Powered Repository Search with Redis 8 Vector Similarity
 
 ## What I Built
 
-I created a modern full-stack application that demonstrates the power of AI-driven semantic search using Redis vector similarity. This isn't your typical keyword-based search - it understands the meaning behind queries and finds relevant content even when exact words don't match.
+I created a modern full-stack web application that combines React, Deno, and Redis 8 to deliver AI-powered semantic search capabilities for GitHub repositories. This isn't just another search tool - it's a smart repository discovery platform that understands the meaning behind your queries using vector embeddings and cosine similarity.
 
-The application combines a sleek React frontend with a Deno-powered backend, creating a seamless experience for adding, searching, and managing content. Users can perform natural language queries like "machine learning algorithms" and get relevant results even if the stored content uses terms like "AI models" or "neural networks."
-
-Key features include:
-
-- **Semantic Search**: Natural language queries powered by Google GenAI embeddings
-- **Real-time Interface**: Modern React UI with dark/light theme support
-- **Serverless Architecture**: Built for Deno Deploy and Cloudflare Pages
-- **Full CRUD Operations**: Complete item management with vector-powered search
-- **Multiple Search Types**: Search by title, content, or combined embeddings
+The application features a sleek React frontend with dark mode support, powered by a robust Deno backend that leverages Redis 8's advanced vector search capabilities. Users can add GitHub repositories to their collection and then search through them using natural language queries that go far beyond simple keyword matching.
 
 ## Demo
 
-🔗 **Repository**: [Redis AI Vector Search Boilerplate](https://github.com/your-username/redis-ai-vector-search)
+🔗 **Repository**: [My Awesome Boilerplate](https://github.com/uratmangun/my-awesome-boilerplate)
 
-The project showcases a complete implementation with:
-
-- React 19 frontend with TypeScript and Tailwind CSS
-- Deno serverless functions for the API layer
-- Redis vector database with cosine similarity search
-- Google GenAI for text embedding generation
+The project showcases a complete implementation of vector similarity search using Redis 8, with features including:
+- AI-powered semantic search using Google GenAI embeddings
+- Real-time repository management with GitHub API integration
+- Multiple search types (description, repository name, or combined embeddings)
+- Responsive design with Tailwind CSS and custom UI components
+- Secure authentication with Clerk
 
 ## How I Used Redis 8
 
-Redis serves as the primary database and search engine in this application, going far beyond traditional caching. Here's how I leveraged Redis 8's advanced capabilities:
+Redis 8 serves as the backbone of this application, going far beyond traditional caching to function as a primary vector database and search engine. Here's how I leveraged its advanced capabilities:
 
-### Vector Database Implementation
+### Vector Storage and Indexing
+I used Redis 8's native vector field support to store three types of embeddings for each repository:
+- **Description embeddings**: 768-dimensional vectors from repository descriptions
+- **Repository name embeddings**: Semantic vectors from repository names  
+- **Combined embeddings**: Unified vectors combining both description and name data
 
-The core innovation lies in using Redis as a vector database. Each piece of content gets converted into 768-dimensional embeddings using Google GenAI, then stored in Redis alongside the original text:
-
+The Redis index schema supports both FLAT and HNSW algorithms:
 ```typescript
-// Store embeddings in Redis hash
-await redis.hset(itemKey, {
-  title: item.title,
-  content: item.content,
-  titleEmbeddings: JSON.stringify(titleEmbeddings),
-  contentEmbeddings: JSON.stringify(contentEmbeddings),
-  combinedEmbeddings: JSON.stringify(combinedEmbeddings),
-})
+// FLAT algorithm for precise similarity on smaller datasets
+"$.descriptionEmbeddings" as descriptionEmbeddings VECTOR "FLAT" 6
+    "TYPE" FLOAT32
+    "DIM" 768
+    "DISTANCE_METRIC" "COSINE"
+
+// HNSW for faster approximate search on larger datasets
+"$.combinedEmbeddings" as combinedEmbeddings VECTOR "HNSW" 8
+    "TYPE" FLOAT32
+    "DIM" 768
+    "DISTANCE_METRIC" "COSINE"
 ```
 
-### Cosine Similarity Search
+### Semantic Search Implementation
+Instead of relying on Redis Search modules that might not be available in all environments, I implemented a custom vector similarity search using Redis 8's core operations:
 
-Instead of relying on Redis Search modules, I implemented cosine similarity calculations directly in the application layer. This approach ensures compatibility across different Redis deployments while maintaining high performance:
+1. **Vector Generation**: Using Google's Gemini embedding model to convert text queries into 768-dimensional vectors
+2. **Similarity Calculation**: Computing cosine similarity between query vectors and stored repository embeddings
+3. **Ranking**: Sorting results by similarity scores to surface the most relevant repositories
 
-```typescript
-// Calculate cosine similarity between query and stored embeddings
-let dotProduct = 0
-let queryMagnitude = 0
-let storedMagnitude = 0
-
-for (let i = 0; i < queryEmbedding.length; i++) {
-  dotProduct += queryEmbedding[i] * storedEmbeddings[i]
-  queryMagnitude += queryEmbedding[i] * queryEmbedding[i]
-  storedMagnitude += storedEmbeddings[i] * storedEmbeddings[i]
-}
-
-const similarity =
-  dotProduct / (Math.sqrt(queryMagnitude) * Math.sqrt(storedMagnitude))
-```
-
-### Multi-Modal Search Strategy
-
+### Multi-Modal Search Capabilities
 The application supports three distinct search modes:
+- **Description Search**: Matches against repository description embeddings
+- **Repository Search**: Focuses on repository name semantics
+- **Combined Search**: Uses unified embeddings for comprehensive matching
 
-- **Title Search**: Searches only in document titles using title-specific embeddings
-- **Content Search**: Searches only in document content using content-specific embeddings
-- **Combined Search**: Searches across both title and content using merged embeddings
+### Real-Time Data Management
+Redis 8 handles all CRUD operations for repository data, storing complete JSON documents with embedded vectors. The hash-based storage pattern (`item:*`) enables efficient scanning and retrieval while maintaining data integrity.
 
-This flexibility allows users to fine-tune their search strategy based on their needs.
+### Performance Optimization
+By leveraging Redis 8's in-memory architecture, the application delivers sub-second search results even when processing complex vector calculations. The cosine similarity computations happen entirely in-memory, making the search experience incredibly responsive.
 
-### Scalable Data Architecture
-
-Redis handles the complete data lifecycle:
-
-- **Storage**: Items stored as Redis hashes with structured fields
-- **Indexing**: Vector embeddings stored as JSON strings for efficient retrieval
-- **Search**: Scan operations combined with in-memory similarity calculations
-- **Management**: Full CRUD operations with automatic timestamp tracking
-
-### Performance Optimizations
-
-The implementation includes several Redis-specific optimizations:
-
-- **Batch Operations**: Using Redis pipelines for bulk operations
-- **Memory Efficiency**: Storing embeddings as compressed JSON strings
-- **Connection Pooling**: Efficient Redis connection management in serverless functions
-- **Scan Patterns**: Using Redis SCAN for memory-efficient key iteration
-
-### Beyond Traditional Use Cases
-
-This project demonstrates Redis 8's evolution from a simple cache to a sophisticated data platform:
-
-1. **Primary Database**: Redis serves as the main data store, not just a cache layer
-2. **Vector Search Engine**: Handles complex similarity calculations at scale
-3. **Real-time Operations**: Supports instant search results with sub-second response times
-4. **Serverless Compatibility**: Works seamlessly with modern deployment platforms
-
-The result is a powerful, scalable search system that understands context and meaning, making it perfect for applications like documentation search, content discovery, recommendation engines, and knowledge bases.
-
----
-
-_Built with Redis 8, Deno, React, and Google GenAI - showcasing the future of intelligent search applications._
+This implementation demonstrates Redis 8's evolution from a simple cache to a sophisticated vector database capable of powering modern AI applications. The combination of traditional Redis operations with advanced vector capabilities creates a powerful foundation for semantic search that scales beautifully.
