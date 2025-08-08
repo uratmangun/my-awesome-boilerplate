@@ -75,7 +75,6 @@ export function HomePage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          url: window.location.hostname,
           limit: 50,
         }),
       })

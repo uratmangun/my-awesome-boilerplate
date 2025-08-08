@@ -1,8 +1,8 @@
-// Deno function to list all items filtered by URL (domain name)
+// Deno function to list all items filtered by category
 import { connect } from 'https://deno.land/x/redis@v0.32.3/mod.ts'
 
 interface ListItemsByUrlRequest {
-  category: string // Domain name to filter by (e.g., example.com)
+  category: string // Category to filter by (e.g., "my awesome boilerplate")
   limit?: number // Maximum number of results (default: 50)
 }
 
@@ -47,7 +47,8 @@ export default {
       return new Response(
         JSON.stringify({
           success: false,
-          message: 'Method not allowed. Use GET or POST to list items by URL.',
+          message:
+            'Method not allowed. Use GET or POST to list items by category.',
           timestamp: new Date().toISOString(),
         }),
         {
@@ -117,7 +118,7 @@ export default {
         itemKeys.push(...scanResult[1])
       } while (cursor !== '0')
 
-      // Filter items by URL and collect matching items
+      // Filter items by category and collect matching items
       const items: Array<{
         id: string
         github_description: string
@@ -141,8 +142,8 @@ export default {
             itemData[itemDataArray[i]] = itemDataArray[i + 1]
           }
 
-          // Check if this item matches the requested URL
-          if (itemData.url === requestParams.url) {
+          // Check if this item matches the requested category
+          if (itemData.category === requestParams.category) {
             items.push({
               id: itemKey,
               github_description: itemData.github_description || '',
@@ -173,7 +174,7 @@ export default {
 
       const response: ListItemsByUrlResponse = {
         success: true,
-        message: `Found ${sortedItems.length} items for URL: ${requestParams.url}`,
+        message: `Found ${sortedItems.length} items for category: ${requestParams.category}`,
         results: {
           total: sortedItems.length,
           items: sortedItems,
@@ -189,12 +190,12 @@ export default {
         },
       })
     } catch (error) {
-      console.error('Error listing items by URL:', error)
+      console.error('Error listing items by category:', error)
 
       return new Response(
         JSON.stringify({
           success: false,
-          message: 'Failed to list items by URL from Redis database.',
+          message: 'Failed to list items by category from Redis database.',
           error: error.message,
           timestamp: new Date().toISOString(),
         }),
